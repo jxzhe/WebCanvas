@@ -1,7 +1,7 @@
 # Software Studio 2018 Spring Assignment 01 Web Canvas
 
 ## Web Canvas
-<img src="example01.gif" width="700px" height="500px"></img>
+<img src="images/example01.gif" width="700px" height="500px"></img>
 
 ## Todo
 1. **Fork the repo ,remove fork relationship and change project visibility to public.**
