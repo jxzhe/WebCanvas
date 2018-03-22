@@ -9,7 +9,7 @@
 3. Beautify appearance (CSS).
 4. Design user interaction widgets and control tools for custom setting or editing (JavaScript).
 5. **Commit to "your" project repository and deploy to Gitlab page.**
-6. **Describing the functions of your canvas in REABME.md**
+6. **Describing the functions of your canvas in README.md**
 
 ## Scoring (Check detailed requirments via iLMS)
 
