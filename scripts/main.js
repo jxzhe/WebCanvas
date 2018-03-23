@@ -1,8 +1,4 @@
 window.onload = function () {
-//    var date = new Date();
-//    var footer = document.querySelector('footer');
-//    footer.innerHTML = footer.innerHTML.replace('2000', date.getFullYear());
-
     var arrow = document.querySelector('header i');
     arrow.onclick = function () {
         document.querySelector('main').scrollIntoView({
