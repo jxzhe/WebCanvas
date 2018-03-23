@@ -47,3 +47,14 @@ header .lead {
 header i {
   font-size: 2rem;
 }
+
+canvas {
+  width: 100vw;
+  height: 100vh;
+}
+
+/*
+footer {
+  height: 10vh;
+}
+*/
