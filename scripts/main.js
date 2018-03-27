@@ -1,226 +1,250 @@
+var header = document.querySelector('header')
+var main = document.querySelector('main');
+var footer = document.querySelector('footer');
+
+header.style.height = String(window.innerHeight) + 'px';
+main.style.height = String(window.innerHeight * 0.9) + 'px';
+footer.style.height = String(window.innerHeight * 0.1) + 'px';
+
 window.onload = function () {
-    var arrow = document.querySelector('header i');
-    arrow.onclick = function () {
-        document.querySelector('footer').scrollIntoView({
-            behavior: 'smooth'
+    main.classList.toggle('hidden');
+    footer.classList.toggle('hidden');
+}
+
+header.lastElementChild.onclick = function () {
+    header.classList.toggle('hidden');
+};
+
+var canvas = document.querySelector('canvas'),
+    c = document.querySelector('canvas:nth-of-type(2)'),
+    cs = document.querySelector('canvas:nth-of-type(3)');
+
+canvas.width = c.width = cs.width = window.innerWidth;
+canvas.height = c.height = cs.height = window.innerHeight * 0.9;
+
+var context = canvas.getContext('2d'),
+    ctx = c.getContext('2d'),
+    csx = cs.getContext('2d');
+
+context.fillStyle = '#FFFFFF';
+context.fillRect(0, 0, canvas.width, canvas.height);
+
+var tools = document.querySelectorAll('.tools');
+tools.forEach(function (tool) {
+    tool.onclick = function () {
+        tools.forEach(function (tool) {
+            tool.classList.remove('btn-primary');
+            tool.classList.add('btn-secondary');
         });
-    }
-
-    document.querySelector('main').style.height = String(window.innerHeight * 0.9) + 'px';
-    document.querySelector('footer').style.height = String(window.innerHeight * 0.1) + 'px';
-
-    var canvas = document.querySelectorAll('canvas');
-    canvas[0].width = canvas[1].width = window.innerWidth;
-    canvas[0].height = canvas[1].height = window.innerHeight * 0.9;
-
-    var context = [];
-    context[0] = canvas[0].getContext('2d');
-    context[1] = canvas[1].getContext('2d');
-
-    context[0].fillStyle = '#FFF';
-    context[0].fillRect(0, 0, canvas[0].width, canvas[0].height);
-
-    var isFirst = true,
-        isPainting = false,
-        clickUndo = false,
-        clickRefresh = false,
-        uploadImage = false;
-
-    var cursor = {},
-        prevCursor = {},
-        lineHistory = [];
-
-    canvas[1].addEventListener('mousedown', function (e) {
-        if (isFirst) {
-            isFirst = false;
-        } else {
-            printToCanvas();
-            context[1].clearRect(0, 0, canvas[1].width, canvas[1].height);
+        this.classList.add('btn-primary');
+        this.classList.remove('btn-secondary');
+        if (this.id === 'Text') {
+            text = window.prompt('Input you text here:', 'TEXT');
         }
-        redo.setAttribute('disabled', 'disabled');
-        undo.removeAttribute('disabled');
+    };
+});
 
-        context[1].strokeStyle = document.querySelector('input[type=color]').value;
-        if (document.querySelector('#Eraser').classList.contains('btn-primary')) {
-            context[1].strokeStyle = '#FFF';
-        }
-        context[1].lineWidth = document.querySelector('input[type=range]').value;
-        context[1].lineJoin = "round";
-        context[1].lineCap = "round";
+var cursor = {},
+    prevCursor = {};
+var isDrawing = false;
+var imgStack = [context.getImageData(0, 0, c.width, c.height)];
+var index = 0;
+var text;
 
-        lineHistory.push(context[1].strokeStyle);
-        lineHistory.push(context[1].lineWidth);
+function getCursor(canvas, e) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+    };
+}
 
-        cursor = getCursor(canvas[1], e);
-        draw();
-        prevCursor = cursor;
-    });
+var lineWidth = document.querySelector('input[name=lineWidth]');
+lineWidth.onmousemove = function () {
+    document.querySelector('input[name=lineWidth]+div').innerHTML = this.value;
+};
+lineWidth.onchange = function () {
+    document.querySelector('input[name=lineWidth]+div').innerHTML = this.value;
+};
 
-    canvas[1].addEventListener('mousemove', function (e) {
-        if (isPainting) {
-            cursor = getCursor(canvas[1], e);
-            draw();
-            prevCursor = cursor;
-        }
-    });
-
-    canvas[1].addEventListener('mouseup', function (e) {
-        isPainting = false;
-    });
-
-    canvas[1].addEventListener('mouseleave', function (e) {
-        isPainting = false;
-    });
-
-    function getCursor(canvas, e) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        };
+cs.onmousedown = function (e) {
+    var using = document.querySelector('.tools.btn-primary'),
+        color = document.querySelector('input[name=color]').value,
+        width = lineWidth.value;
+    cursor = getCursor(c, e);
+    if (using.id === 'Pencil') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = ctx.lineJoin = 'round';
+        drawLine();
+    } else if (using.id === 'Eraser') {
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = width;
+        ctx.lineCap = ctx.lineJoin = 'round';
+        drawLine();
+    } else if (using.id === 'Text') {
+        context.fillStyle = color;
+        context.font = width + 'px Times';
+        context.fillText(text, cursor.x, cursor.y);
+    } else if (using.id === 'Arc') {
+        ctx.fillStyle = color;
+    } else if (using.id === 'Rect') {
+        ctx.fillStyle = color;
+    } else if (using.id === 'Tri') {
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
     }
+    
+    isDrawing = true;
+    prevCursor = cursor;
+};
 
-    function draw() {
-        context[1].beginPath();
-        if (!isPainting) {
-            context[1].moveTo(cursor.x - 1, cursor.y);
-            lineHistory.push({
-                x: cursor.x - 1,
-                y: cursor.y,
-            });
-            isPainting = true;
-        } else {
-            context[1].moveTo(prevCursor.x, prevCursor.y);
+cs.onmousemove = function (e) {
+    var using = document.querySelector('.tools.btn-primary'),
+        color = document.querySelector('input[name=color]').value,
+        width = lineWidth.value;
+    cursor = getCursor(c, e);
+    csx.clearRect(0, 0, c.width, c.height);
+    var pencil = new Image,
+        eraser = new Image;
+    pencil.src = 'images/pencil.svg';
+    eraser.src = 'images/eraser.svg';
+    if (using.id === 'Pencil') {
+        csx.beginPath();
+        csx.strokeStyle = '#000000';
+        csx.fillStyle = color;
+        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        csx.stroke();
+        csx.fill();
+        csx.drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
+    } else if (using.id === 'Eraser') {
+        csx.beginPath();
+        csx.strokeStyle = '#000000';
+        csx.fillStyle = '#FFFFFFAA';
+        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        csx.stroke();
+        csx.fill();
+        csx.drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
+    } else if (using.id === 'Text') {
+        csx.fillStyle = color;
+        csx.font = width + 'px Times';
+        csx.fillText(text, cursor.x, cursor.y);
+    } else if (using.id === 'Arc') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px Times';
+        csx.fillText('●', cursor.x - 14, cursor.y + 10);
+    } else if (using.id === 'Rect') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px Times';
+        csx.fillText('■', cursor.x - 14, cursor.y + 10);
+    } else if (using.id === 'Tri') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px Times';
+        csx.fillText('▲', cursor.x - 14, cursor.y + 10);
+    }
+    if (isDrawing) {
+        if (using.id === 'Pencil') {
+            drawLine();
+        } else if (using.id === 'Eraser') {
+            drawLine();
+        } else if (using.id === 'Arc') {
+
+        } else if (using.id === 'Rect') {
+
+        } else if (using.id === 'Tri') {
+
         }
-        context[1].lineTo(cursor.x, cursor.y);
-        lineHistory.push(cursor);
-        context[1].closePath();
-        context[1].stroke();
     }
+    prevCursor = cursor;
+};
 
-    function printToCanvas() {
-        context[0].drawImage(canvas[1], 0, 0);
-        // if (clickUndo) {
-        //     context[1].clearRect(0, 0, canvas[1].width, canvas[1].height);
-        //     canvas[1].style.opacity = '1';
-        //     clickUndo = false;
-        // } else if (clickRefresh) {
-        //     context[0].fillStyle = '#FFF';
-        //     context[0].fillRect(0, 0, canvas[0].width, canvas[0].height);
-        //     clickRefresh = false;
-        // } else if (uploadImage) {
-        //     var width = img.width;
-        //     var height = img.height;
-        //     if (img.width / img.height > canvas[0].width / canvas[0].height) {
-        //         height *= canvas[0].width / width;
-        //         context[0].drawImage(img, 0, (canvas[0].height - height) / 2, canvas[0].width, height);
-        //     } else {
-        //         width *= canvas[0].height / height;
-        //         context[0].drawImage(img, (canvas[0].width - width) / 2, 0, width, canvas[0].height);
-        //     }
-        //     context[1].clearRect(0, 0, canvas[1].width, canvas[1].height);
-        //     uploadImage = false;
-        // } else {
-        //     context[0].strokeStyle = lineHistory[0];
-        //     context[0].lineWidth = lineHistory[1];
-        //     context[0].lineJoin = "round";
-        //     context[0].lineCap = "round";
-        //     for (var i = 3; i < lineHistory.length; ++i) {
-        //         context[0].beginPath();
-        //         context[0].moveTo(lineHistory[i - 1].x, lineHistory[i - 1].y);
-        //         context[0].lineTo(lineHistory[i].x, lineHistory[i].y);
-        //         context[0].closePath();
-        //         context[0].stroke();
-        //     }
-        // }
-        lineHistory.length = 0;
+cs.onmouseup = function () {
+    isDrawing = false;
+    context.drawImage(c, 0, 0);
+    ctx.clearRect(0, 0, c.width, c.height);
+    imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+    imgStack.splice(index + 1);
+    undoRedoBtn();
+};
+
+cs.onmouseleave = function () {
+    isDrawing = false;
+    csx.clearRect(0, 0, c.width, c.height);
+};
+
+function drawLine() {
+    ctx.beginPath();
+    if (isDrawing) {
+        ctx.moveTo(prevCursor.x, prevCursor.y);
+    } else {
+        ctx.moveTo(cursor.x - 1, cursor.y);
     }
+    ctx.lineTo(cursor.x, cursor.y);
+    ctx.stroke();
+}
 
-    var buttons = document.querySelectorAll('.tool');
-    for (var i = 0; i < buttons.length; ++i) {
-        buttons[i].addEventListener('click', function () {
-            var others = document.querySelectorAll('footer>button');
-            for (var i = 0; i < others.length; ++i) {
-                others[i].classList.add('btn-secondary');
-                others[i].classList.remove('btn-primary');
+document.querySelector('#Undo').onclick = function () {
+    if (index > 0) {
+        context.putImageData(imgStack[--index], 0, 0);
+    }
+    undoRedoBtn();
+};
+
+document.querySelector('#Redo').onclick = function () {
+    if (imgStack[index + 1] !== undefined) {
+        context.putImageData(imgStack[++index], 0, 0);
+    }
+    undoRedoBtn();
+};
+
+document.querySelector('#Refresh').onclick = function () {
+    context.fillStyle = "#FFFFFF";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+    imgStack.splice(index + 1);
+    undoRedoBtn();
+};
+
+document.querySelector('#Save').onclick = function () {
+    this.setAttribute('download', 'save.png');
+    this.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+    this.click();
+};
+
+document.querySelector('input[name=upload]').onchange = function (e) {
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        var img = new Image();
+        img.onload = function () {
+            var width = img.width;
+            var height = img.height;
+            if (img.width / img.height > canvas.width / canvas.height) {
+                height *= canvas.width / width;
+                context.drawImage(img, 0, (canvas.height - height) / 2, canvas.width, height);
+            } else {
+                width *= canvas.height / height;
+                context.drawImage(img, (canvas.width - width) / 2, 0, width, canvas.height);
             }
-            this.classList.add('btn-primary');
-            this.classList.remove('btn-secondary');
-        });
+            imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+            imgStack.splice(index + 1);
+            undoRedoBtn();
+        };
+        img.src = event.target.result;
     }
+    reader.readAsDataURL(e.target.files[0]);
+}
 
-    var penSize = document.querySelector('input[type=range]');
-    penSize.addEventListener('mousemove', function () {
-        document.querySelector('input[type=range]+div').innerHTML = this.value;
-    });
-    penSize.addEventListener('change', function () {
-        document.querySelector('input[type=range]+div').innerHTML = this.value;
-    });
-
+function undoRedoBtn() {
     var undo = document.querySelector('#Undo'),
         redo = document.querySelector('#Redo');
-
-    undo.addEventListener('click', function () {
-        canvas[1].style.opacity = '0';
-        clickUndo = true;
+    if (index > 0) {
+        undo.removeAttribute('disabled');
+    } else {
         undo.setAttribute('disabled', 'disabled');
+    }
+    if (imgStack[index + 1] !== undefined) {
         redo.removeAttribute('disabled');
-    });
-
-    redo.addEventListener('click', function () {
-        canvas[1].style.opacity = '1';
-        clickUndo = false;
+    } else {
         redo.setAttribute('disabled', 'disabled');
-        undo.removeAttribute('disabled');
-    });
-
-    document.querySelector('#Refresh').addEventListener('click', function () {
-        if (!isFirst) {
-            printToCanvas();
-            redo.setAttribute('disabled', 'disabled');
-            undo.removeAttribute('disabled');
-            context[1].fillStyle = "#FFF";
-            context[1].fillRect(0, 0, canvas[1].width, canvas[1].height);
-            clickRefresh = true;
-        }
-    });
-
-    document.querySelector('#Save').addEventListener('click', function () {
-        printToCanvas();
-        undo.setAttribute('disabled', 'disabled');
-        redo.setAttribute('disabled', 'disabled');
-        this.setAttribute('download', 'save.png');
-        this.setAttribute('href', canvas[0].toDataURL("image/png").replace("image/png", "image/octet-stream"));
-        this.click();
-    });
-
-    document.querySelector('input[name=imageLoader]').addEventListener('change', handleImage, false);
-
-    function handleImage(e) {
-        if (!isFirst) {
-            printToCanvas();
-            context[1].clearRect(0, 0, canvas[1].width, canvas[1].height);
-        }
-        redo.setAttribute('disabled', 'disabled');
-        undo.removeAttribute('disabled');
-
-        var reader = new FileReader();
-        reader.onload = function (event) {
-            var img = new Image();
-            img.onload = function () {
-                var width = img.width;
-                var height = img.height;
-                if (img.width / img.height > canvas[1].width / canvas[1].height) {
-                    height *= canvas[1].width / width;
-                    context[1].drawImage(img, 0, (canvas[1].height - height) / 2, canvas[1].width, height);
-                } else {
-                    width *= canvas[1].height / height;
-                    context[1].drawImage(img, (canvas[1].width - width) / 2, 0, width, canvas[1].height);
-                }
-            };
-            img.src = event.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-        uploadImage = true;
     }
 }
