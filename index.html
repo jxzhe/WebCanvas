@@ -30,44 +30,39 @@
   </header>
 
   <main id="Main" class="d-flex justify-content-center">
-    <canvas id="Canvas"></canvas>
+    <canvas></canvas>
+    <canvas></canvas>
   </main>
 
   <footer class="d-flex justify-content-around align-items-center bg-light">
-    <button class="btn btn-primary">
+    <input type="color" name="color" value="#FF0000">
+    <div class="d-flex">
+      <input class="mx-1" type="range" name="range" value="10" min="1" max="50">
+      <div style="width:1rem">10</div>
+    </div>
+    <button class="tool btn btn-primary">
       <i class="fas fa-pencil-alt"></i>
     </button>
-    <button class="btn btn-secondary" id="Eraser">
+    <button class="tool btn btn-secondary" id="Eraser">
       <i class="fas fa-eraser"></i>
     </button>
-    <button class="btn btn-secondary px-3" style="font-family:'Times New Roman'">T</button>
-    <button class="btn btn-secondary">&#x25CF;</button>
-    <button class="btn btn-secondary">&#x25A0;</button>
-    <button class="btn btn-secondary">&#x25B2;</button>
-    <div class="d-flex flex-column text-center" style="width:12rem">
-      <div class="d-flex mb-2">
-        <input type="color" name="color" value="#FF0000" style="width:4rem">
-        <input class="mx-2" type="range" name="range" value="10" min="1" max="50" style="width:6rem">
-        <div style="width:2rem">10</div>
-      </div>
-      <div style="width:12rem;font-size:0.1rem">
-        <input type="file" name="imageLoader">
-      </div>
-    </div>
-    <div class="d-flex">
-      <button class="btn btn-secondary">
-        <i class="fas fa-undo"></i>
-      </button>
-      <button class="btn btn-secondary">
-        <i class="fas fa-redo"></i>
-      </button>
-      <button class="btn btn-secondary" id="Refresh">
-        <i class="fas fa-file"></i>
-      </button>
-      <a id="Save" class="btn btn-secondary text-white">
-        <i class="far fa-save"></i>
-      </a>
-    </div>
+    <button class="tool btn btn-secondary px-3" disabled style="font-family:'Times New Roman'">T</button>
+    <button class="tool btn btn-secondary" disabled>&#x25CF;</button>
+    <button class="tool btn btn-secondary" disabled>&#x25A0;</button>
+    <button class="tool btn btn-secondary" disabled>&#x25B2;</button>
+    <input type="file" name="imageLoader" style="font-size:0.1rem;width:64px;" accept=".jpg, .jpeg, .png">
+    <button class="btn btn-secondary" id="Undo" disabled>
+      <i class="fas fa-undo"></i>
+    </button>
+    <button class="btn btn-secondary" id="Redo" disabled>
+      <i class="fas fa-redo"></i>
+    </button>
+    <button class="btn btn-secondary" id="Refresh">
+      <i class="fas fa-file"></i>
+    </button>
+    <a id="Save" class="btn btn-secondary text-white">
+      <i class="far fa-save"></i>
+    </a>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

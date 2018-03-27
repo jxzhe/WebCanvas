@@ -48,9 +48,15 @@ header i {
   font-size: 2rem;
 }
 
+main {
+  position: relative;
+}
+
 canvas {
   width: 100vw;
-  cursor: url('../images/marker-outline.png');
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 footer button, footer a {
