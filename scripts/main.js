@@ -55,6 +55,14 @@ function getCursor(canvas, e) {
     };
 }
 
+function getCursorTouch(canvas, e) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+    };
+}
+
 var lineWidth = document.querySelector('#LineWidth');
 lineWidth.onmousemove = lineWidth.onchange = function () {
     document.querySelector('label[for=LineWidth]').innerHTML = this.value;
@@ -65,6 +73,38 @@ cs.onmousedown = function (e) {
         color = document.querySelector('input[name=color]').value,
         width = lineWidth.value;
     cursor = getCursor(c, e);
+    if (using.id === 'Pencil') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = ctx.lineJoin = 'round';
+        drawLine();
+    } else if (using.id === 'Eraser') {
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = width;
+        ctx.lineCap = ctx.lineJoin = 'round';
+        drawLine();
+    } else if (using.id === 'Text') {
+        context.fillStyle = color;
+        context.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        context.fillText(text, cursor.x, cursor.y);
+    } else if (using.id === 'Arc') {
+        ctx.fillStyle = color;
+    } else if (using.id === 'Rect') {
+        ctx.fillStyle = color;
+    } else if (using.id === 'Tri') {
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+    }
+
+    isDrawing = true;
+    prevCursor = cursor;
+};
+
+cs.ontouchstart = function (e) {
+    var using = document.querySelector('.tools.btn-primary'),
+        color = document.querySelector('input[name=color]').value,
+        width = lineWidth.value;
+    cursor = getCursorTouch(c, e);
     if (using.id === 'Pencil') {
         ctx.strokeStyle = color;
         ctx.lineWidth = width;
@@ -151,7 +191,66 @@ cs.onmousemove = function (e) {
     prevCursor = cursor;
 };
 
-cs.onmouseup = function () {
+cs.ontouchmove = function (e) {
+    var using = document.querySelector('.tools.btn-primary'),
+        color = document.querySelector('input[name=color]').value,
+        width = lineWidth.value;
+    cursor = getCursorTouch(c, e);
+    csx.clearRect(0, 0, c.width, c.height);
+    var pencil = new Image,
+        eraser = new Image;
+    pencil.src = 'images/pencil.svg';
+    eraser.src = 'images/eraser.svg';
+    if (using.id === 'Pencil') {
+        csx.beginPath();
+        csx.strokeStyle = '#000000';
+        csx.fillStyle = color;
+        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        csx.stroke();
+        csx.fill();
+        csx.drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
+    } else if (using.id === 'Eraser') {
+        csx.beginPath();
+        csx.strokeStyle = '#000000';
+        csx.fillStyle = '#FFFFFFAA';
+        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        csx.stroke();
+        csx.fill();
+        csx.drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
+    } else if (using.id === 'Text') {
+        csx.fillStyle = color;
+        csx.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        csx.fillText(text, cursor.x, cursor.y);
+    } else if (using.id === 'Arc') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        csx.fillText('●', cursor.x - 14, cursor.y + 10);
+    } else if (using.id === 'Rect') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        csx.fillText('■', cursor.x - 14, cursor.y + 10);
+    } else if (using.id === 'Tri') {
+        csx.fillStyle = '#000000';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        csx.fillText('▲', cursor.x - 14, cursor.y + 10);
+    }
+    if (isDrawing) {
+        if (using.id === 'Pencil') {
+            drawLine();
+        } else if (using.id === 'Eraser') {
+            drawLine();
+        } else if (using.id === 'Arc') {
+
+        } else if (using.id === 'Rect') {
+
+        } else if (using.id === 'Tri') {
+
+        }
+    }
+    prevCursor = cursor;
+};
+
+cs.onmouseup = cs.onmouseleave = cs.touchend = function () {
     if (isDrawing) {
         isDrawing = false;
         context.drawImage(c, 0, 0);
@@ -162,8 +261,6 @@ cs.onmouseup = function () {
     }
     csx.clearRect(0, 0, c.width, c.height);
 };
-
-cs.onmouseleave = cs.onmouseup;
 
 function drawLine() {
     ctx.beginPath();
