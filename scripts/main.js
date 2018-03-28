@@ -101,6 +101,7 @@ cs.onmousedown = function (e) {
 };
 
 cs.ontouchstart = function (e) {
+    e.preventDefault();
     var using = document.querySelector('.tools.btn-primary'),
         color = document.querySelector('input[name=color]').value,
         width = lineWidth.value;
@@ -192,6 +193,7 @@ cs.onmousemove = function (e) {
 };
 
 cs.ontouchmove = function (e) {
+    e.preventDefault();
     var using = document.querySelector('.tools.btn-primary'),
         color = document.querySelector('input[name=color]').value,
         width = lineWidth.value;
