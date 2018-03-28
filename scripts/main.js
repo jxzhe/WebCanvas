@@ -2,17 +2,13 @@ var header = document.querySelector('header')
 var main = document.querySelector('main');
 var footer = document.querySelector('footer');
 
-header.style.height = String(window.innerHeight) + 'px';
-main.style.height = String(window.innerHeight * 0.9) + 'px';
-footer.style.height = String(window.innerHeight * 0.1) + 'px';
-
 window.onload = function () {
-    main.classList.toggle('hidden');
-    footer.classList.toggle('hidden');
+    main.classList.remove('invisible');
+    footer.classList.remove('invisible');
 }
 
 header.lastElementChild.onclick = function () {
-    header.classList.toggle('hidden');
+    header.classList.add('invisible');
 };
 
 var canvas = document.querySelector('canvas'),
@@ -20,7 +16,7 @@ var canvas = document.querySelector('canvas'),
     cs = document.querySelector('canvas:nth-of-type(3)');
 
 canvas.width = c.width = cs.width = window.innerWidth;
-canvas.height = c.height = cs.height = window.innerHeight * 0.9;
+canvas.height = c.height = cs.height = window.innerHeight - footer.scrollHeight;
 
 var context = canvas.getContext('2d'),
     ctx = c.getContext('2d'),
@@ -59,12 +55,9 @@ function getCursor(canvas, e) {
     };
 }
 
-var lineWidth = document.querySelector('input[name=lineWidth]');
-lineWidth.onmousemove = function () {
-    document.querySelector('input[name=lineWidth]+div').innerHTML = this.value;
-};
-lineWidth.onchange = function () {
-    document.querySelector('input[name=lineWidth]+div').innerHTML = this.value;
+var lineWidth = document.querySelector('#LineWidth');
+lineWidth.onmousemove = lineWidth.onchange = function () {
+    document.querySelector('label[for=LineWidth]').innerHTML = this.value;
 };
 
 cs.onmousedown = function (e) {
@@ -84,7 +77,7 @@ cs.onmousedown = function (e) {
         drawLine();
     } else if (using.id === 'Text') {
         context.fillStyle = color;
-        context.font = width + 'px Times';
+        context.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
         context.fillText(text, cursor.x, cursor.y);
     } else if (using.id === 'Arc') {
         ctx.fillStyle = color;
@@ -94,7 +87,7 @@ cs.onmousedown = function (e) {
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
     }
-    
+
     isDrawing = true;
     prevCursor = cursor;
 };
@@ -127,19 +120,19 @@ cs.onmousemove = function (e) {
         csx.drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
     } else if (using.id === 'Text') {
         csx.fillStyle = color;
-        csx.font = width + 'px Times';
+        csx.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
         csx.fillText(text, cursor.x, cursor.y);
     } else if (using.id === 'Arc') {
         csx.fillStyle = '#000000';
-        csx.font = '30px Times';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
         csx.fillText('●', cursor.x - 14, cursor.y + 10);
     } else if (using.id === 'Rect') {
         csx.fillStyle = '#000000';
-        csx.font = '30px Times';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
         csx.fillText('■', cursor.x - 14, cursor.y + 10);
     } else if (using.id === 'Tri') {
         csx.fillStyle = '#000000';
-        csx.font = '30px Times';
+        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
         csx.fillText('▲', cursor.x - 14, cursor.y + 10);
     }
     if (isDrawing) {
@@ -159,18 +152,18 @@ cs.onmousemove = function (e) {
 };
 
 cs.onmouseup = function () {
-    isDrawing = false;
-    context.drawImage(c, 0, 0);
-    ctx.clearRect(0, 0, c.width, c.height);
-    imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
-    imgStack.splice(index + 1);
-    undoRedoBtn();
-};
-
-cs.onmouseleave = function () {
-    isDrawing = false;
+    if (isDrawing) {
+        isDrawing = false;
+        context.drawImage(c, 0, 0);
+        ctx.clearRect(0, 0, c.width, c.height);
+        imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+        imgStack.splice(index + 1);
+        undoRedoBtn();
+    }
     csx.clearRect(0, 0, c.width, c.height);
 };
+
+cs.onmouseleave = cs.onmouseup;
 
 function drawLine() {
     ctx.beginPath();
@@ -198,7 +191,7 @@ document.querySelector('#Redo').onclick = function () {
 };
 
 document.querySelector('#Refresh').onclick = function () {
-    context.fillStyle = "#FFFFFF";
+    context.fillStyle = '#FFFFFF';
     context.fillRect(0, 0, canvas.width, canvas.height);
     imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
     imgStack.splice(index + 1);
@@ -207,7 +200,7 @@ document.querySelector('#Refresh').onclick = function () {
 
 document.querySelector('#Save').onclick = function () {
     this.setAttribute('download', 'save.png');
-    this.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+    this.setAttribute('href', canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
     this.click();
 };
 

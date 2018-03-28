@@ -8,7 +8,8 @@ header::after {
   z-index: -2;
 }
 
-header::before, header::after {
+header::before,
+header::after {
   content: '';
   position: absolute;
   top: 0;
@@ -28,15 +29,6 @@ header::before, header::after {
   }
 }
 
-.hidden {
-  visibility: hidden;
-  opacity: 0;
-  -webkit-transition: visibility 0s 0.3s, opacity 0.3s linear;
-  -moz-transition: visibility 0s 0.3s, opacity 0.3s linear;
-  -o-transition: visibility 0s 0.3s, opacity 0.3s linear;
-  transition: visibility 0s 0.3s, opacity 0.3s linear;
-}
-
 header .lead {
   font-size: 1.5rem;
 }
@@ -45,6 +37,26 @@ header button {
   font-size: 1.2rem !important;
 }
 
-footer button, footer a {
-  font-size: 1.5rem !important;
+.invisible {
+  opacity: 0;
+  -webkit-transition: visibility 0s 0.3s, opacity 0.3s linear;
+  -moz-transition: visibility 0s 0.3s, opacity 0.3s linear;
+  -o-transition: visibility 0s 0.3s, opacity 0.3s linear;
+  transition: visibility 0s 0.3s, opacity 0.3s linear;
+}
+
+footer {
+  z-index: 1 !important;
+}
+
+.navbar-nav>div>.btn {
+  min-width: 4rem;
+  width: 30%;
+  font-size: 1.5rem;
+}
+
+@media(min-width: 992px) {
+  .navbar-nav>div>.btn {
+    width: 3.5rem;
+  }
 }
