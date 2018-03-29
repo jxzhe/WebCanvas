@@ -11,19 +11,21 @@ header.lastElementChild.onclick = function () {
     header.classList.add('invisible');
 };
 
-var canvas = document.querySelector('canvas'),
-    c = document.querySelector('canvas:nth-of-type(2)'),
-    cs = document.querySelector('canvas:nth-of-type(3)');
+var c = [document.querySelector('canvas'),
+    document.querySelector('canvas:nth-of-type(2)'),
+    document.querySelector('canvas:nth-of-type(3)'),
+];
 
-canvas.width = c.width = cs.width = window.innerWidth;
-canvas.height = c.height = cs.height = window.innerHeight - footer.scrollHeight;
+c[0].width = c[0].width = c[2].width = window.innerWidth;
+c[0].height = c[0].height = c[2].height = window.innerHeight - footer.scrollHeight;
 
-var context = canvas.getContext('2d'),
-    ctx = c.getContext('2d'),
-    csx = cs.getContext('2d');
+var ctx = [c[0].getContext('2d'),
+    c[1].getContext('2d'),
+    c[2].getContext('2d')
+];
 
-context.fillStyle = '#FFFFFF';
-context.fillRect(0, 0, canvas.width, canvas.height);
+ctx[0].fillStyle = '#FFFFFF';
+ctx[0].fillRect(0, 0, c[0].width, c[0].height);
 
 var tools = document.querySelectorAll('.tools');
 tools.forEach(function (tool) {
@@ -43,20 +45,20 @@ tools.forEach(function (tool) {
 var cursor = {},
     prevCursor = {};
 var isDrawing = false;
-var imgStack = [context.getImageData(0, 0, c.width, c.height)];
+var imgStack = [ctx[0].getImageData(0, 0, c[0].width, c[0].height)];
 var index = 0;
 var text;
 
-function getCursor(canvas, e) {
-    var rect = canvas.getBoundingClientRect();
+function getCursor(c, e) {
+    var rect = c.getBoundingClientRect();
     return {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
     };
 }
 
-function getCursorTouch(canvas, e) {
-    var rect = canvas.getBoundingClientRect();
+function getCursorTouch(c, e) {
+    var rect = c.getBoundingClientRect();
     return {
         x: e.touches[0].clientX - rect.left,
         y: e.touches[0].clientY - rect.top,
@@ -68,113 +70,83 @@ lineWidth.onmousemove = lineWidth.onchange = function () {
     document.querySelector('label[for=LineWidth]').innerHTML = this.value;
 };
 
-cs.onmousedown = function (e) {
+c[2].onmousedown = function (e) {
     var using = document.querySelector('.tools.btn-primary'),
         color = document.querySelector('input[name=color]').value,
         width = lineWidth.value;
-    cursor = getCursor(c, e);
+    cursor = getCursor(c[1], e);
     if (using.id === 'Pencil') {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.lineCap = ctx.lineJoin = 'round';
+        ctx[1].strokeStyle = color;
+        ctx[1].lineWidth = width;
+        ctx[1].lineCap = ctx[1].lineJoin = 'round';
         drawLine();
     } else if (using.id === 'Eraser') {
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = width;
-        ctx.lineCap = ctx.lineJoin = 'round';
+        ctx[1].strokeStyle = '#FFFFFF';
+        ctx[1].lineWidth = width;
+        ctx[1].lineCap = ctx[1].lineJoin = 'round';
         drawLine();
     } else if (using.id === 'Text') {
-        context.fillStyle = color;
-        context.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        context.fillText(text, cursor.x, cursor.y);
+        ctx[0].fillStyle = color;
+        ctx[0].font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        ctx[0].fillText(text, cursor.x, cursor.y);
     } else if (using.id === 'Arc') {
-        ctx.fillStyle = color;
+        ctx[1].fillStyle = color;
     } else if (using.id === 'Rect') {
-        ctx.fillStyle = color;
+        ctx[1].fillStyle = color;
     } else if (using.id === 'Tri') {
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
+        ctx[1].strokeStyle = color;
+        ctx[1].fillStyle = color;
     }
 
     isDrawing = true;
     prevCursor = cursor;
 };
 
-cs.ontouchstart = function (e) {
-    e.preventDefault();
+c[2].onmousemove = function (e) {
     var using = document.querySelector('.tools.btn-primary'),
         color = document.querySelector('input[name=color]').value,
         width = lineWidth.value;
-    cursor = getCursorTouch(c, e);
-    if (using.id === 'Pencil') {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.lineCap = ctx.lineJoin = 'round';
-        drawLine();
-    } else if (using.id === 'Eraser') {
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = width;
-        ctx.lineCap = ctx.lineJoin = 'round';
-        drawLine();
-    } else if (using.id === 'Text') {
-        context.fillStyle = color;
-        context.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        context.fillText(text, cursor.x, cursor.y);
-    } else if (using.id === 'Arc') {
-        ctx.fillStyle = color;
-    } else if (using.id === 'Rect') {
-        ctx.fillStyle = color;
-    } else if (using.id === 'Tri') {
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-    }
-
-    isDrawing = true;
-    prevCursor = cursor;
-};
-
-cs.onmousemove = function (e) {
-    var using = document.querySelector('.tools.btn-primary'),
-        color = document.querySelector('input[name=color]').value,
-        width = lineWidth.value;
-    cursor = getCursor(c, e);
-    csx.clearRect(0, 0, c.width, c.height);
+    cursor = getCursor(c[1], e);
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     var pencil = new Image,
         eraser = new Image;
     pencil.src = 'images/pencil.svg';
     eraser.src = 'images/eraser.svg';
     if (using.id === 'Pencil') {
-        csx.beginPath();
-        csx.strokeStyle = '#000000';
-        csx.fillStyle = color;
-        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
-        csx.stroke();
-        csx.fill();
-        csx.drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
+        ctx[2].beginPath();
+        ctx[2].strokeStyle = '#000000';
+        ctx[2].fillStyle = color;
+        ctx[2].arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        ctx[2].stroke();
+        ctx[2].fill();
+        ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
     } else if (using.id === 'Eraser') {
-        csx.beginPath();
-        csx.strokeStyle = '#000000';
-        csx.fillStyle = '#FFFFFFAA';
-        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
-        csx.stroke();
-        csx.fill();
-        csx.drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
+        ctx[2].beginPath();
+        ctx[2].strokeStyle = '#000000';
+        ctx[2].fillStyle = '#FFFFFFAA';
+        ctx[2].arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
+        ctx[2].stroke();
+        ctx[2].fill();
+        ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
     } else if (using.id === 'Text') {
-        csx.fillStyle = color;
-        csx.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText(text, cursor.x, cursor.y);
+        if (text === null) {
+            text = 'TEXT';
+        }
+        ctx[2].fillStyle = color;
+        ctx[2].font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        ctx[2].fillText(text, cursor.x, cursor.y);
     } else if (using.id === 'Arc') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('●', cursor.x - 14, cursor.y + 10);
+        ctx[2].fillStyle = '#000000';
+        ctx[2].font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        ctx[2].fillText('●', cursor.x - 14, cursor.y + 10);
     } else if (using.id === 'Rect') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('■', cursor.x - 14, cursor.y + 10);
+        ctx[2].fillStyle = '#000000';
+        ctx[2].font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        ctx[2].fillText('■', cursor.x - 14, cursor.y + 10);
     } else if (using.id === 'Tri') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('▲', cursor.x - 14, cursor.y + 10);
+        ctx[2].fillStyle = '#000000';
+        ctx[2].font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
+        ctx[2].fillText('▲', cursor.x - 14, cursor.y + 10);
     }
     if (isDrawing) {
         if (using.id === 'Pencil') {
@@ -192,114 +164,54 @@ cs.onmousemove = function (e) {
     prevCursor = cursor;
 };
 
-cs.ontouchmove = function (e) {
-    e.preventDefault();
-    var using = document.querySelector('.tools.btn-primary'),
-        color = document.querySelector('input[name=color]').value,
-        width = lineWidth.value;
-    cursor = getCursorTouch(c, e);
-    csx.clearRect(0, 0, c.width, c.height);
-    var pencil = new Image,
-        eraser = new Image;
-    pencil.src = 'images/pencil.svg';
-    eraser.src = 'images/eraser.svg';
-    if (using.id === 'Pencil') {
-        csx.beginPath();
-        csx.strokeStyle = '#000000';
-        csx.fillStyle = color;
-        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
-        csx.stroke();
-        csx.fill();
-        csx.drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
-    } else if (using.id === 'Eraser') {
-        csx.beginPath();
-        csx.strokeStyle = '#000000';
-        csx.fillStyle = '#FFFFFFAA';
-        csx.arc(cursor.x, cursor.y, width / 2, 0, 2 * Math.PI);
-        csx.stroke();
-        csx.fill();
-        csx.drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
-    } else if (using.id === 'Text') {
-        csx.fillStyle = color;
-        csx.font = width + 'px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText(text, cursor.x, cursor.y);
-    } else if (using.id === 'Arc') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('●', cursor.x - 14, cursor.y + 10);
-    } else if (using.id === 'Rect') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('■', cursor.x - 14, cursor.y + 10);
-    } else if (using.id === 'Tri') {
-        csx.fillStyle = '#000000';
-        csx.font = '30px -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
-        csx.fillText('▲', cursor.x - 14, cursor.y + 10);
-    }
-    if (isDrawing) {
-        if (using.id === 'Pencil') {
-            drawLine();
-        } else if (using.id === 'Eraser') {
-            drawLine();
-        } else if (using.id === 'Arc') {
-
-        } else if (using.id === 'Rect') {
-
-        } else if (using.id === 'Tri') {
-
-        }
-    }
-    prevCursor = cursor;
-};
-
-cs.onmouseup = cs.onmouseleave = cs.touchend = function () {
+c[2].onmouseup = c[2].onmouseleave = function () {
     if (isDrawing) {
         isDrawing = false;
-        context.drawImage(c, 0, 0);
-        ctx.clearRect(0, 0, c.width, c.height);
-        imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+        ctx[0].drawImage(c[1], 0, 0);
+        ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+        imgStack[++index] = ctx[0].getImageData(0, 0, c[0].width, c[0].height);
         imgStack.splice(index + 1);
         undoRedoBtn();
     }
-    csx.clearRect(0, 0, c.width, c.height);
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
 };
 
 function drawLine() {
-    ctx.beginPath();
+    ctx[1].beginPath();
     if (isDrawing) {
-        ctx.moveTo(prevCursor.x, prevCursor.y);
+        ctx[1].moveTo(prevCursor.x, prevCursor.y);
     } else {
-        ctx.moveTo(cursor.x - 1, cursor.y);
+        ctx[1].moveTo(cursor.x - 1, cursor.y);
     }
-    ctx.lineTo(cursor.x, cursor.y);
-    ctx.stroke();
+    ctx[1].lineTo(cursor.x, cursor.y);
+    ctx[1].stroke();
 }
 
 document.querySelector('#Undo').onclick = function () {
     if (index > 0) {
-        context.putImageData(imgStack[--index], 0, 0);
+        ctx[0].putImageData(imgStack[--index], 0, 0);
     }
     undoRedoBtn();
 };
 
 document.querySelector('#Redo').onclick = function () {
     if (imgStack[index + 1] !== undefined) {
-        context.putImageData(imgStack[++index], 0, 0);
+        ctx[0].putImageData(imgStack[++index], 0, 0);
     }
     undoRedoBtn();
 };
 
 document.querySelector('#Refresh').onclick = function () {
-    context.fillStyle = '#FFFFFF';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+    ctx[0].fillStyle = '#FFFFFF';
+    ctx[0].fillRect(0, 0, c[0].width, c[0].height);
+    imgStack[++index] = ctx[0].getImageData(0, 0, c[0].width, c[0].height);
     imgStack.splice(index + 1);
     undoRedoBtn();
 };
 
 document.querySelector('#Save').onclick = function () {
     this.setAttribute('download', 'save.png');
-    this.setAttribute('href', canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+    this.setAttribute('href', c[0].toDataURL('image/png').replace('image/png', 'image/octet-stream'));
     this.click();
 };
 
@@ -310,14 +222,14 @@ document.querySelector('input[name=upload]').onchange = function (e) {
         img.onload = function () {
             var width = img.width;
             var height = img.height;
-            if (img.width / img.height > canvas.width / canvas.height) {
-                height *= canvas.width / width;
-                context.drawImage(img, 0, (canvas.height - height) / 2, canvas.width, height);
+            if (img.width / img.height > c[0].width / c[0].height) {
+                height *= c[0].width / width;
+                ctx[0].drawImage(img, 0, (c[0].height - height) / 2, c[0].width, height);
             } else {
-                width *= canvas.height / height;
-                context.drawImage(img, (canvas.width - width) / 2, 0, width, canvas.height);
+                width *= c[0].height / height;
+                ctx[0].drawImage(img, (c[0].width - width) / 2, 0, width, c[0].height);
             }
-            imgStack[++index] = context.getImageData(0, 0, c.width, c.height);
+            imgStack[++index] = ctx[0].getImageData(0, 0, c[0].width, c[0].height);
             imgStack.splice(index + 1);
             undoRedoBtn();
         };
