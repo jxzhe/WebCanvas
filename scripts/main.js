@@ -16,8 +16,8 @@ var c = [document.querySelector('canvas'),
     document.querySelector('canvas:nth-of-type(3)'),
 ];
 
-c[0].width = c[0].width = c[2].width = window.innerWidth;
-c[0].height = c[0].height = c[2].height = window.innerHeight - footer.scrollHeight;
+c[0].width = c[1].width = c[2].width = window.innerWidth;
+c[0].height = c[1].height = c[2].height = window.innerHeight - footer.scrollHeight;
 
 var ctx = [c[0].getContext('2d'),
     c[1].getContext('2d'),
