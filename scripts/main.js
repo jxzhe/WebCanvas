@@ -112,10 +112,7 @@ function initTools() {
         updateCanvasStack();
     };
     document.querySelector('#Save').onclick = function () {
-        png = ReImg.fromCanvas(c[0]).toPng();
-        this.setAttribute('download', 'save.png');
-        // this.setAttribute('href', c[0].toDataURL('image/png').replace('image/png', 'image/octet-stream'));
-        this.setAttribute('href', png.src);
+        this.setAttribute('href', c[0].toDataURL('image/png').replace('image/png', 'image/octet-stream'));
         this.click();
     };
 }
