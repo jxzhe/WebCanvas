@@ -5,6 +5,10 @@ const color = document.querySelector('#Color');
 const lineWidth = document.querySelector('#LineWidth');
 const undo = document.querySelector('#Undo');
 const redo = document.querySelector('#Redo');
+const pencil = new Image;
+const eraser = new Image;
+pencil.src = 'images/pencil.svg';
+eraser.src = 'images/eraser.svg';
 
 function Cursor() {
     this.x = this.y = null;
@@ -65,19 +69,22 @@ function initTools() {
             }
             this.classList.remove('btn-secondary');
             this.classList.add('btn-primary');
+            lineWidth.value = lineWidth.nextElementSibling.innerHTML = this.id === 'Eraser' ? 80 : 10;
         };
     }
     document.querySelector('#Text').addEventListener('click', function () {
+        lineWidth.value = lineWidth.nextElementSibling.innerHTML = 50;
         let input = window.prompt('Input', 'TEXT');
         if (input) {
             text = input;
         }
-        input = window.prompt('Font Family', font);
+        input = window.prompt('Font Family\n*change it if you want\n*use comma to seperate', font);
         if (input) {
             font = input;
         }
     });
     document.querySelector('#Upload').onchange = function (e) {
+        lineWidth.value = lineWidth.nextElementSibling.innerHTML = 50;
         let reader = new FileReader();
         reader.onload = function (event) {
             img = new Image();
@@ -116,7 +123,7 @@ function initTools() {
         this.click();
     };
 }
-var png;
+
 function initStartButton() {
     document.querySelector('header button').onclick = function () {
         for (let e of document.querySelectorAll('body>:not(script)')) {
@@ -172,9 +179,9 @@ function drawLine() {
 function handleMouseDown(e) {
     let using = document.querySelector('.tools.btn-primary');
     cursor = getCursor(c[2], e);
-    ctx[1].strokestyle = color.value;
+    ctx[1].strokeStyle = color.value;
     ctx[1].fillStyle = color.value;
-    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineWidth = lineWidth.value / 2;
     ctx[1].lineCap = ctx[1].lineJoin = 'round';
     if (using.id === 'Pencil') {
         drawLine();
@@ -183,10 +190,10 @@ function handleMouseDown(e) {
         drawLine();
     } else if (using.id === 'Text') {
         ctx[0].fillStyle = color.value;
-        ctx[0].font = lineWidth.value + `px ${font}`;
+        ctx[0].font = lineWidth.value * 2 + `px ${font}`;
         ctx[0].fillText(text, cursor.x, cursor.y);
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[0].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+        ctx[0].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
     }
     isDrawing = true;
     prevCursor = cursor;
@@ -198,15 +205,12 @@ function handleMouseMove(e) {
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     ctx[1].strokestyle = color.value;
     ctx[1].fillStyle = color.value;
-    let pencil = new Image,
-        eraser = new Image;
-    pencil.src = 'images/pencil.svg';
-    eraser.src = 'images/eraser.svg';
+
     if (using.id === 'Pencil') {
         ctx[2].beginPath();
         ctx[2].strokeStyle = '#000000';
         ctx[2].fillStyle = color.value;
-        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
+        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
         ctx[2].stroke();
         ctx[2].fill();
         ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
@@ -215,18 +219,18 @@ function handleMouseMove(e) {
         ctx[2].beginPath();
         ctx[2].strokeStyle = '#000000';
         ctx[2].fillStyle = '#FFFFFFAA';
-        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
+        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
         ctx[2].stroke();
         ctx[2].fill();
         ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
         c[2].style.cursor = 'none';
     } else if (using.id === 'Text') {
         ctx[2].fillStyle = color.value;
-        ctx[2].font = lineWidth.value + `px ${font}`;
+        ctx[2].font = lineWidth.value * 2 + `px ${font}`;
         ctx[2].fillText(text, cursor.x, cursor.y);
         c[2].style.cursor = 'default';
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[2].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+        ctx[2].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
         c[2].style.cursor = 'default';
     } else {
         c[2].style.cursor = 'crosshair';
@@ -310,7 +314,7 @@ function handleTouchStart(e) {
 
     ctx[1].fillStyle = color.value;
     ctx[1].strokeStyle = color.value;
-    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineWidth = lineWidth.value / 2;
     ctx[1].lineCap = ctx[1].lineJoin = 'round';
 
     let touches = e.changedTouches;
@@ -329,10 +333,10 @@ function handleTouchStart(e) {
             ctx[1].lineTo(cursor.x, cursor.y);
             ctx[1].stroke();
         } else if (using.id === 'Text') {
-            ctx[1].font = lineWidth.value + `px ${font}`;
+            ctx[1].font = lineWidth.value * 2 + `px ${font}`;
             ctx[1].fillText(text, cursor.x, cursor.y);
         } else if (using.getAttribute('for') === 'Upload') {
-            ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+            ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
         }
     }
 }
@@ -343,7 +347,7 @@ function handleTouchMove(e) {
 
     ctx[1].fillStyle = color.value;
     ctx[1].strokeStyle = color.value;
-    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineWidth = lineWidth.value / 2;
     ctx[1].lineCap = ctx[1].lineJoin = 'round';
 
     let touches = e.changedTouches;
@@ -352,17 +356,34 @@ function handleTouchMove(e) {
         if (idx >= 0) {
             [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
             [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
+            ctx[2].clearRect(0, 0, c[0].width, c[0].height);
             if (using.id === 'Pencil') {
                 ctx[1].beginPath();
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
+                ctx[2].beginPath();
+                ctx[2].strokeStyle = '#000000';
+                ctx[2].fillStyle = color.value;
+                ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
+                ctx[2].stroke();
+                ctx[2].fill();
+                ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
+                c[2].style.cursor = 'none';
             } else if (using.id === 'Eraser') {
                 ctx[1].strokeStyle = '#FFFFFF';
                 ctx[1].beginPath();
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
+                ctx[2].beginPath();
+                ctx[2].strokeStyle = '#000000';
+                ctx[2].fillStyle = '#FFFFFFAA';
+                ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
+                ctx[2].stroke();
+                ctx[2].fill();
+                ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
+                c[2].style.cursor = 'none';
             } else if (using.id === 'Line') {
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
@@ -401,11 +422,11 @@ function handleTouchMove(e) {
                 }
             } else if (using.id === 'Text') {
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].font = lineWidth.value + `px ${font}`;
+                ctx[1].font = lineWidth.value * 2 + `px ${font}`;
                 ctx[1].fillText(text, cursor.x, cursor.y);
             } else if (using.getAttribute('for') === 'Upload') {
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+                ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
             }
             ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
         }
@@ -416,12 +437,15 @@ function handleTouchEnd(e) {
     e.preventDefault();
     ctx[0].drawImage(c[1], 0, 0);
     ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     updateCanvasStack();
     ongoingTouches.splice(0);
 }
 
 function handleTouchCancel(e) {
     e.preventDefault();
+    ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     ongoingTouches.splice(0);
 }
 
