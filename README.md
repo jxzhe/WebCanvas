@@ -1,5 +1,37 @@
 # Software Studio 2018 Spring Assignment 01 Web Canvas
 
+## What I Implemented
+* Basic control tools
+    * Brush
+    * Eraser
+    * Color selector
+    * Size selector
+* Text input
+    * Specify the font family
+    * Specify its color and size
+    * Paste it anywhere
+* Cursor icon
+    * Depends on the current tool
+* Refresh
+    * Be able to undo it too
+* Different brushes
+    * Line
+    * Circle
+    * Rectangle
+    * Triangle
+    * **Specify solid or hollow**
+* Undo / Redo
+    * **As many times as you want**
+* Image tool
+    * Specify its size
+    * Paste it anywhere
+* Download as .png
+* **Mobile Phone FULLY SUPPORTED**
+* **Draw With Multi Finger Simultaneously**
+* **Responsive Footer Bar**
+
+---
+
 ## Web Canvas
 <img src="images/example01.gif" width="700px" height="500px"></img>
 

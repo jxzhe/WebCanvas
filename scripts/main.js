@@ -113,7 +113,7 @@ function initTools() {
     };
     document.querySelector('#Save').onclick = function () {
         this.setAttribute('download', 'save.png');
-        this.setAttribute('href', c[0].toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+        this.setAttribute('href', c[0].toDataURL('image/png'));
         this.click();
     };
 }
@@ -299,7 +299,7 @@ function handleMouseUp() {
     }
 };
 
-let starting = new Cursor();
+let startingCursor = new Cursor();
 let ongoingTouches = [];
 
 function handleTouchStart(e) {
@@ -314,7 +314,7 @@ function handleTouchStart(e) {
     let touches = e.changedTouches;
     for (let i = 0; i < touches.length; i++) {
         ongoingTouches.push(copyTouch(touches[i]));
-        [starting.x, starting.y] = [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
+        [startingCursor.x, startingCursor.y] = [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
         if (using.id === 'Pencil') {
             ctx[1].beginPath();
             ctx[1].moveTo(cursor.x - 1, cursor.y);
@@ -364,13 +364,13 @@ function handleTouchMove(e) {
             } else if (using.id === 'Line') {
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(starting.x, starting.y);
+                ctx[1].moveTo(startingCursor.x, startingCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
             } else if (using.id === 'Arc') {
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].arc(starting.x, starting.y, distance(cursor, starting), 0, 2 * Math.PI);
+                ctx[1].arc(startingCursor.x, startingCursor.y, distance(cursor, startingCursor), 0, 2 * Math.PI);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -379,7 +379,7 @@ function handleTouchMove(e) {
             } else if (using.id === 'Rect') {
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].rect(starting.x, starting.y, cursor.x - starting.x, cursor.y - starting.y);
+                ctx[1].rect(startingCursor.x, startingCursor.y, cursor.x - startingCursor.x, cursor.y - startingCursor.y);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -388,9 +388,9 @@ function handleTouchMove(e) {
             } else if (using.id === 'Tri') {
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(starting.x, starting.y);
+                ctx[1].moveTo(startingCursor.x, startingCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].lineTo((starting.x + cursor.x) / 2 + (cursor.y - starting.y) * Math.sin(Math.PI / 3), (starting.y + cursor.y) / 2 + (starting.x - cursor.x) * Math.sin(Math.PI / 3));
+                ctx[1].lineTo((startingCursor.x + cursor.x) / 2 + (cursor.y - startingCursor.y) * Math.sin(Math.PI / 3), (startingCursor.y + cursor.y) / 2 + (startingCursor.x - cursor.x) * Math.sin(Math.PI / 3));
                 ctx[1].closePath();
                 if (useStroke) {
                     ctx[1].stroke();
