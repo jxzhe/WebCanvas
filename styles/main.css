@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 header::before {
   background: #FFFFFF55;
   z-index: -1;
@@ -49,14 +53,22 @@ footer {
   z-index: 1 !important;
 }
 
-.navbar-nav>div>.btn {
-  min-width: 4rem;
-  width: 30%;
-  font-size: 1.5rem;
+.navbar-nav .btn, .dropup {
+  min-width: 4rem !important;
+  width: 30% !important;
+  font-size: 1.5rem !important;
+}
+
+.dropup .btn {
+  width: 100% !important;
+}
+
+.dropdown-menu {
+  min-width: 0 !important;
 }
 
 @media(min-width: 992px) {
-  .navbar-nav>div>.btn {
-    width: 3.5rem;
+  .navbar-nav .btn, .dropup {
+    width: 3.5rem !important;
   }
 }

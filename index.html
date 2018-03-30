@@ -8,8 +8,7 @@
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
     crossorigin="anonymous">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" integrity="sha384-3AB7yXWz4OeoZcPbieVW64vVXEwADiYyAEhwilzWsLw+9FgqpyjjStpPnpBO8o8S"
-    crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" media="screen" href="styles/fontawesome.css">
   <link rel="stylesheet" type="text/css" media="screen" href="styles/main.css">
   <title>WebCanvas</title>
 </head>
@@ -21,7 +20,7 @@
       <span class="text-danger">Canvas</span>
     </h1>
     <div class="lead text-dark">explore your creativity online</div>
-    <button class="btn btn-lg btn-outline-primary mt-4 px-3">start your journey</button>
+    <button class="btn btn-lg btn-outline-primary mt-4 px-3">Let's start</button>
   </header>
 
   <main class="position-relative invisible">
@@ -36,26 +35,58 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <div class="navbar-nav d-flex justify-content-between align-items-center w-100">
-        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-2 my-lg-0 px-4 px-lg-0">
+        <div class="d-flex justify-content-center my-1 my-lg-0 px-4 px-lg-0">
           <input id="Color" type="color" name="color" value="#FF0000">
+        </div>
+        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-1 my-lg-0 px-4 px-lg-0">
           <input id="LineWidth" class="mx-2 w-100" type="range" name="lineWidth" value="20" min="5" max="100">
           <label for="LineWidth" class="mr-2 mb-0">20</label>
         </div>
-        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-2 my-lg-0 px-4 px-lg-0">
+        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-1 my-lg-0 px-4 px-lg-0">
           <button id="Pencil" class="tools btn btn-lg btn-primary">
             <i class="fas fa-pencil-alt"></i>
+          </button>
+          <button id="Line" class="tools btn btn-lg btn-secondary">
+            ／
           </button>
           <button id="Eraser" class="tools btn btn-lg btn-secondary">
             <i class="fas fa-eraser"></i>
           </button>
+        </div>
+        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-1 my-lg-0 px-4 px-lg-0">
+          <div class="dropup">
+            <button id="Arc" class="tools dropup btn btn-lg btn-secondary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">●</button>
+            <div class="dropdown-menu text-center" aria-labelledby="Arc">
+              <a class="dropdown-item" onclick="useStroke=false">●</a>
+              <a class="dropdown-item" onclick="useStroke=true">○</a>
+            </div>
+          </div>
+          <div class="dropup">
+            <button id="Rect" class="tools dropup btn btn-lg btn-secondary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">■</button>
+            <div class="dropdown-menu text-center" aria-labelledby="Rect">
+              <a class="dropdown-item" onclick="useStroke=false">■</a>
+              <a class="dropdown-item" onclick="useStroke=true">□</a>
+            </div>
+          </div>
+          <div class="dropup">
+            <button id="Tri" class="tools dropup btn btn-lg btn-secondary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">▲</button>
+            <div class="dropdown-menu text-center" aria-labelledby="Tri">
+              <a class="dropdown-item" onclick="useStroke=false">▲</a>
+              <a class="dropdown-item" onclick="useStroke=true">△</a>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-1 my-lg-0 px-4 px-lg-0">
           <button id="Text" class="tools btn btn-lg btn-secondary px-3" style="font-family:'Times New Roman'">T</button>
+          <input id="Upload" class="d-none" type="file" name="upload" accept=".jpg, .jpeg, .png">
+          <label for="Upload" class="tools btn btn-lg btn-secondary mb-0">
+            <i class="fas fa-upload"></i>
+          </label>
+          <a id="Save" class="btn btn-lg btn-secondary text-white">
+            <i class="fas fa-save"></i>
+          </a>
         </div>
-        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-2 my-lg-0 px-4 px-lg-0">
-          <button id="Arc" class="tools btn btn-lg btn-secondary" disabled>●</button>
-          <button id="Rect" class="tools btn btn-lg btn-secondary" disabled>■</button>
-          <button id="Tri" class="tools btn btn-lg btn-secondary" disabled>▲</button>
-        </div>
-        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-2 my-lg-0 px-4 px-lg-0">
+        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-1 my-lg-0 px-4 px-lg-0">
           <button id="Undo" class="btn btn-lg btn-secondary" disabled>
             <i class="fas fa-undo"></i>
           </button>
@@ -66,22 +97,8 @@
             <i class="fas fa-file"></i>
           </button>
         </div>
-        <div class="d-flex justify-content-between justify-content-lg-around w-100 my-2 my-lg-0 px-4 px-lg-0">
-          <input id="Upload" class="d-none" type="file" name="upload" accept=".jpg, .jpeg, .png">
-          <label for="Upload" class="btn btn-lg btn-secondary mb-0">
-            <i class="fas fa-upload"></i>
-          </label>
-          <a id="Save" class="btn btn-lg btn-secondary text-white">
-            <i class="far fa-save"></i>
-          </a>
-          <button id="Refresh" class="btn btn-lg btn-secondary">
-            <i class="fas fa-thumbs-up"></i>
-          </button>
-        </div>
       </div>
     </div>
-
-
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
