@@ -112,12 +112,14 @@ function initTools() {
         updateCanvasStack();
     };
     document.querySelector('#Save').onclick = function () {
+        png = ReImg.fromCanvas(c[0]).toPng();
         this.setAttribute('download', 'save.png');
-        this.setAttribute('href', c[0].toDataURL('image/png'));
+        // this.setAttribute('href', c[0].toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+        this.setAttribute('href', png.src);
         this.click();
     };
 }
-
+var png;
 function initStartButton() {
     document.querySelector('header button').onclick = function () {
         for (let e of document.querySelectorAll('body>:not(script)')) {
@@ -173,7 +175,8 @@ function drawLine() {
 function handleMouseDown(e) {
     let using = document.querySelector('.tools.btn-primary');
     cursor = getCursor(c[2], e);
-    ctx[1].strokeStyle = color.value;
+    ctx[1].strokestyle = color.value;
+    ctx[1].fillStyle = color.value;
     ctx[1].lineWidth = lineWidth.value;
     ctx[1].lineCap = ctx[1].lineJoin = 'round';
     if (using.id === 'Pencil') {
@@ -196,6 +199,8 @@ function handleMouseMove(e) {
     let using = document.querySelector('.tools.btn-primary');
     cursor = getCursor(c[2], e);
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
+    ctx[1].strokestyle = color.value;
+    ctx[1].fillStyle = color.value;
     let pencil = new Image,
         eraser = new Image;
     pencil.src = 'images/pencil.svg';
