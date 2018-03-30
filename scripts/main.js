@@ -38,130 +38,16 @@ function initCanvas() {
     ctx[0].fillStyle = '#FFFFFF';
     ctx[0].fillRect(0, 0, c[0].width, c[0].height);
 
-    c[2].onmousedown = function (e) {
-        let using = document.querySelector('.tools.btn-primary');
-        cursor = getCursor(c[2], e);
-        ctx[1].strokeStyle = color.value;
-        ctx[1].lineWidth = lineWidth.value;
-        ctx[1].lineCap = ctx[1].lineJoin = 'round';
-        if (using.id === 'Pencil') {
-            drawLine();
-        } else if (using.id === 'Eraser') {
-            ctx[1].strokeStyle = '#FFFFFF';
-            drawLine();
-        } else if (using.id === 'Text') {
-            ctx[0].fillStyle = color.value;
-            ctx[0].font = lineWidth.value + `px ${font}`;
-            ctx[0].fillText(text, cursor.x, cursor.y);
-        } else if (using.getAttribute('for') === 'Upload') {
-            ctx[0].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
-        }
-        isDrawing = true;
-        prevCursor = cursor;
-    };
-    c[2].onmousemove = function (e) {
-        let using = document.querySelector('.tools.btn-primary');
-        cursor = getCursor(c[2], e);
-        ctx[2].clearRect(0, 0, c[0].width, c[0].height);
-        let pencil = new Image,
-            eraser = new Image;
-        pencil.src = 'images/pencil.svg';
-        eraser.src = 'images/eraser.svg';
-        if (using.id === 'Pencil') {
-            ctx[2].beginPath();
-            ctx[2].strokeStyle = '#000000';
-            ctx[2].fillStyle = color.value;
-            ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
-            ctx[2].stroke();
-            ctx[2].fill();
-            ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
-            c[2].style.cursor = 'none';
-        } else if (using.id === 'Eraser') {
-            ctx[2].beginPath();
-            ctx[2].strokeStyle = '#000000';
-            ctx[2].fillStyle = '#FFFFFFAA';
-            ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
-            ctx[2].stroke();
-            ctx[2].fill();
-            ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
-            c[2].style.cursor = 'none';
-        } else if (using.id === 'Text') {
-            ctx[2].fillStyle = color.value;
-            ctx[2].font = lineWidth.value + `px ${font}`;
-            ctx[2].fillText(text, cursor.x, cursor.y);
-            c[2].style.cursor = 'default';
-        } else if (using.getAttribute('for') === 'Upload') {
-            ctx[2].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
-            c[2].style.cursor = 'default';
-        } else {
-            c[2].style.cursor = 'crosshair';
-        }
-        if (isDrawing) {
-            if (using.id === 'Pencil') {
-                drawLine();
-                prevCursor = cursor;
-            } else if (using.id === 'Eraser') {
-                drawLine();
-                prevCursor = cursor;
-            } else if (using.id === 'Line') {
-                ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].stroke();
-            } else if (using.id === 'Arc') {
-                ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
-                if (useStroke) {
-                    ctx[1].stroke();
-                } else {
-                    ctx[1].fill();
-                }
-            } else if (using.id === 'Rect') {
-                ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - prevCursor.x, cursor.y - prevCursor.y);
-                if (useStroke) {
-                    ctx[1].stroke();
-                } else {
-                    ctx[1].fill();
-                }
-            } else if (using.id === 'Tri') {
-                ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].lineTo((prevCursor.x + cursor.x) / 2 + (cursor.y - prevCursor.y) * Math.sin(Math.PI / 3), (prevCursor.y + cursor.y) / 2 + (prevCursor.x - cursor.x) * Math.sin(Math.PI / 3));
-                ctx[1].closePath();
-                if (useStroke) {
-                    ctx[1].stroke();
-                } else {
-                    ctx[1].fill();
-                }
-            }
-        }
-    };
-    c[2].onmouseleave = function () {
-        ctx[2].clearRect(0, 0, c[0].width, c[0].height);
-    }
-    c[2].onmouseenter = function (e) {
-        let using = document.querySelector('.tools.btn-primary');
-        if (isDrawing) {
-            cursor = getCursor(c[2], e);
-            if (using.id === 'Pencil' || using.id === 'Eraser') {
-                prevCursor = cursor;
-            }
-        }
-    }
-    c[2].onmouseup = function () {
-        if (isDrawing) {
-            isDrawing = false;
-            ctx[0].drawImage(c[1], 0, 0);
-            ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-            updateCanvasStack();
-        }
-    };
+    c[2].onmousedown = handleMouseDown;
+    c[2].onmousemove = handleMouseMove;
+    c[2].onmouseleave = handleMouseLeave;
+    c[2].onmouseenter = handleMouseEnter;
+    c[2].onmouseup = handleMouseUp;
+
+    c[2].ontouchstart = handleTouchStart;
+    c[2].ontouchmove = handleTouchMove;
+    c[2].ontouchcancel = handleTouchCancel;
+    c[2].ontouchend = handleTouchEnd;
 }
 
 function initCanvasStack() {
@@ -273,14 +159,6 @@ function getCursor(c, e) {
     };
 }
 
-function getTouchCursor(c, e) {
-    let rect = c.getBoundingClientRect();
-    return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top,
-    };
-}
-
 function drawLine() {
     ctx[1].beginPath();
     if (isDrawing) {
@@ -290,4 +168,275 @@ function drawLine() {
     }
     ctx[1].lineTo(cursor.x, cursor.y);
     ctx[1].stroke();
+}
+
+function handleMouseDown(e) {
+    let using = document.querySelector('.tools.btn-primary');
+    cursor = getCursor(c[2], e);
+    ctx[1].strokeStyle = color.value;
+    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineCap = ctx[1].lineJoin = 'round';
+    if (using.id === 'Pencil') {
+        drawLine();
+    } else if (using.id === 'Eraser') {
+        ctx[1].strokeStyle = '#FFFFFF';
+        drawLine();
+    } else if (using.id === 'Text') {
+        ctx[0].fillStyle = color.value;
+        ctx[0].font = lineWidth.value + `px ${font}`;
+        ctx[0].fillText(text, cursor.x, cursor.y);
+    } else if (using.getAttribute('for') === 'Upload') {
+        ctx[0].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+    }
+    isDrawing = true;
+    prevCursor = cursor;
+};
+
+function handleMouseMove(e) {
+    let using = document.querySelector('.tools.btn-primary');
+    cursor = getCursor(c[2], e);
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
+    let pencil = new Image,
+        eraser = new Image;
+    pencil.src = 'images/pencil.svg';
+    eraser.src = 'images/eraser.svg';
+    if (using.id === 'Pencil') {
+        ctx[2].beginPath();
+        ctx[2].strokeStyle = '#000000';
+        ctx[2].fillStyle = color.value;
+        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
+        ctx[2].stroke();
+        ctx[2].fill();
+        ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
+        c[2].style.cursor = 'none';
+    } else if (using.id === 'Eraser') {
+        ctx[2].beginPath();
+        ctx[2].strokeStyle = '#000000';
+        ctx[2].fillStyle = '#FFFFFFAA';
+        ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 2, 0, 2 * Math.PI);
+        ctx[2].stroke();
+        ctx[2].fill();
+        ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
+        c[2].style.cursor = 'none';
+    } else if (using.id === 'Text') {
+        ctx[2].fillStyle = color.value;
+        ctx[2].font = lineWidth.value + `px ${font}`;
+        ctx[2].fillText(text, cursor.x, cursor.y);
+        c[2].style.cursor = 'default';
+    } else if (using.getAttribute('for') === 'Upload') {
+        ctx[2].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+        c[2].style.cursor = 'default';
+    } else {
+        c[2].style.cursor = 'crosshair';
+    }
+    if (isDrawing) {
+        if (using.id === 'Pencil') {
+            drawLine();
+            prevCursor = cursor;
+        } else if (using.id === 'Eraser') {
+            drawLine();
+            prevCursor = cursor;
+        } else if (using.id === 'Line') {
+            ctx[1].beginPath();
+            ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+            ctx[1].moveTo(prevCursor.x, prevCursor.y);
+            ctx[1].lineTo(cursor.x, cursor.y);
+            ctx[1].stroke();
+        } else if (using.id === 'Arc') {
+            ctx[1].beginPath();
+            ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+            ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
+            if (useStroke) {
+                ctx[1].stroke();
+            } else {
+                ctx[1].fill();
+            }
+        } else if (using.id === 'Rect') {
+            ctx[1].beginPath();
+            ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+            ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - prevCursor.x, cursor.y - prevCursor.y);
+            if (useStroke) {
+                ctx[1].stroke();
+            } else {
+                ctx[1].fill();
+            }
+        } else if (using.id === 'Tri') {
+            ctx[1].beginPath();
+            ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+            ctx[1].moveTo(prevCursor.x, prevCursor.y);
+            ctx[1].lineTo(cursor.x, cursor.y);
+            ctx[1].lineTo((prevCursor.x + cursor.x) / 2 + (cursor.y - prevCursor.y) * Math.sin(Math.PI / 3), (prevCursor.y + cursor.y) / 2 + (prevCursor.x - cursor.x) * Math.sin(Math.PI / 3));
+            ctx[1].closePath();
+            if (useStroke) {
+                ctx[1].stroke();
+            } else {
+                ctx[1].fill();
+            }
+        }
+    }
+};
+
+function handleMouseLeave() {
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
+}
+
+function handleMouseEnter(e) {
+    let using = document.querySelector('.tools.btn-primary');
+    if (isDrawing) {
+        cursor = getCursor(c[2], e);
+        if (using.id === 'Pencil' || using.id === 'Eraser') {
+            prevCursor = cursor;
+        }
+    }
+}
+
+function handleMouseUp() {
+    if (isDrawing) {
+        isDrawing = false;
+        ctx[0].drawImage(c[1], 0, 0);
+        ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+        updateCanvasStack();
+    }
+};
+
+let starting = new Cursor();
+let ongoingTouches = [];
+
+function handleTouchStart(e) {
+    e.preventDefault();
+    let using = document.querySelector('.tools.btn-primary');
+
+    ctx[1].fillStyle = color.value;
+    ctx[1].strokeStyle = color.value;
+    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineCap = ctx[1].lineJoin = 'round';
+
+    let touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+        ongoingTouches.push(copyTouch(touches[i]));
+        [starting.x, starting.y] = [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
+        if (using.id === 'Pencil') {
+            ctx[1].beginPath();
+            ctx[1].moveTo(cursor.x - 1, cursor.y);
+            ctx[1].lineTo(cursor.x, cursor.y);
+            ctx[1].stroke();
+        } else if (using.id === 'Eraser') {
+            ctx[1].strokeStyle = '#FFFFFF';
+            ctx[1].beginPath();
+            ctx[1].moveTo(cursor.x - 1, cursor.y);
+            ctx[1].lineTo(cursor.x, cursor.y);
+            ctx[1].stroke();
+        } else if (using.id === 'Text') {
+            ctx[1].font = lineWidth.value + `px ${font}`;
+            ctx[1].fillText(text, cursor.x, cursor.y);
+        } else if (using.getAttribute('for') === 'Upload') {
+            ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+        }
+    }
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    let using = document.querySelector('.tools.btn-primary');
+
+    ctx[1].fillStyle = color.value;
+    ctx[1].strokeStyle = color.value;
+    ctx[1].lineWidth = lineWidth.value;
+    ctx[1].lineCap = ctx[1].lineJoin = 'round';
+
+    let touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+        let idx = ongoingTouchIndexById(touches[i].identifier);
+        if (idx >= 0) {
+            [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
+            [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
+            if (using.id === 'Pencil') {
+                ctx[1].beginPath();
+                ctx[1].moveTo(prevCursor.x, prevCursor.y);
+                ctx[1].lineTo(cursor.x, cursor.y);
+                ctx[1].stroke();
+            } else if (using.id === 'Eraser') {
+                ctx[1].strokeStyle = '#FFFFFF';
+                ctx[1].beginPath();
+                ctx[1].moveTo(prevCursor.x, prevCursor.y);
+                ctx[1].lineTo(cursor.x, cursor.y);
+                ctx[1].stroke();
+            } else if (using.id === 'Line') {
+                ctx[1].beginPath();
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].moveTo(starting.x, starting.y);
+                ctx[1].lineTo(cursor.x, cursor.y);
+                ctx[1].stroke();
+            } else if (using.id === 'Arc') {
+                ctx[1].beginPath();
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].arc(starting.x, starting.y, distance(cursor, starting), 0, 2 * Math.PI);
+                if (useStroke) {
+                    ctx[1].stroke();
+                } else {
+                    ctx[1].fill();
+                }
+            } else if (using.id === 'Rect') {
+                ctx[1].beginPath();
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].rect(starting.x, starting.y, cursor.x - starting.x, cursor.y - starting.y);
+                if (useStroke) {
+                    ctx[1].stroke();
+                } else {
+                    ctx[1].fill();
+                }
+            } else if (using.id === 'Tri') {
+                ctx[1].beginPath();
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].moveTo(starting.x, starting.y);
+                ctx[1].lineTo(cursor.x, cursor.y);
+                ctx[1].lineTo((starting.x + cursor.x) / 2 + (cursor.y - starting.y) * Math.sin(Math.PI / 3), (starting.y + cursor.y) / 2 + (starting.x - cursor.x) * Math.sin(Math.PI / 3));
+                ctx[1].closePath();
+                if (useStroke) {
+                    ctx[1].stroke();
+                } else {
+                    ctx[1].fill();
+                }
+            } else if (using.id === 'Text') {
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].font = lineWidth.value + `px ${font}`;
+                ctx[1].fillText(text, cursor.x, cursor.y);
+            } else if (using.getAttribute('for') === 'Upload') {
+                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+                ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 100, imgHeight * lineWidth.value / 100);
+            }
+            ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    e.preventDefault();
+    ctx[0].drawImage(c[1], 0, 0);
+    ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    updateCanvasStack();
+    ongoingTouches.splice(0);
+}
+
+function handleTouchCancel(e) {
+    e.preventDefault();
+    ongoingTouches.splice(0);
+}
+
+function copyTouch(touch) {
+    return {
+        identifier: touch.identifier,
+        pageX: touch.pageX,
+        pageY: touch.pageY
+    };
+}
+
+function ongoingTouchIndexById(idToFind) {
+    for (let i = 0; i < ongoingTouches.length; i++) {
+        let id = ongoingTouches[i].identifier;
+        if (id == idToFind) {
+            return i;
+        }
+    }
+    return -1;
 }
