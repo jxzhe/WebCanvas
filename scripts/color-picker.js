@@ -288,9 +288,9 @@
 
         // prevent default
         function prevent(e) {
-            if (e && e.cancelable && !e.defaultPrevented) {
-                e.preventDefault();
-            }
+            // if (e && e.cancelable && !e.defaultPrevented) {
+            //     e.preventDefault();
+            // }
         }
 
         // get dimension
