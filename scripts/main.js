@@ -466,3 +466,8 @@ function ongoingTouchIndexById(idToFind) {
     }
     return -1;
 }
+
+var picker = new CP(color);
+picker.on("change", function (color) {
+    this.target.value = '#' + color;
+});
