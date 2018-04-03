@@ -25,12 +25,14 @@ let img = new Image();
 let imgWidth = 0;
 let imgHeight = 0;
 let useStroke = false;
+let picker = new CP(color);
 
 window.onload = function () {
     initCanvas();
     initCanvasStack();
     initTools();
     initStartButton();
+    initColor();
     initLineWidth();
 };
 
@@ -130,6 +132,15 @@ function initStartButton() {
             e.classList.toggle('invisible');
         }
     };
+}
+
+function initColor() {
+    picker.on("change", function (color) {
+        this.target.value = '#' + color;
+    });
+    if (window.innerWidth < 992) {
+        color.setAttribute('disabled', 'disabled');
+    }
 }
 
 function initLineWidth() {
@@ -466,8 +477,3 @@ function ongoingTouchIndexById(idToFind) {
     }
     return -1;
 }
-
-var picker = new CP(color);
-picker.on("change", function (color) {
-    this.target.value = '#' + color;
-});
