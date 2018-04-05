@@ -329,8 +329,9 @@ function handleTouchStart(e) {
     if (tempCanvas.length >= 5) {
         ongoingTouches.splice(0);
         startingTouches.splice(0);
-        for (let t of tempCanvas) {
-            t.parentElement.removeChild(t);
+        for (let i = 0; i < tempCanvas.length; i++) {
+            ctx[0].drawImage(tempCanvas[i], 0, 0);
+            tempCanvas[i].parentElement.removeChild(tempCanvas[i]);
         }
         tempCanvas.splice(0);
         tempCtx.splice(0);
