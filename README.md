@@ -27,9 +27,9 @@
     * Paste it **anywhere**
 * **Download as .png**
 
-## ***Mobile Phone Fully Supported**
-## ***Multi Touch Fully Supported**
-## ***Responsive Footer Bar**
+## ** *Mobile Phone Fully Supported **
+## ** *Multi Touch Fully Supported **
+## ** *Responsive Footer Bar **
 
 ---
 
