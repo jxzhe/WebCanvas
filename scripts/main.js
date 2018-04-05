@@ -397,14 +397,14 @@ function handleTouchMove(e) {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(startingCursor.x, startingCursor.y);
+                ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
             } else if (using.id === 'Arc') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].arc(startingCursor.x, startingCursor.y, distance(cursor, startingCursor), 0, 2 * Math.PI);
+                ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, startingCursor), 0, 2 * Math.PI);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -414,7 +414,7 @@ function handleTouchMove(e) {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].rect(startingCursor.x, startingCursor.y, cursor.x - startingCursor.x, cursor.y - startingCursor.y);
+                ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - startingCursor.x, cursor.y - startingCursor.y);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -424,7 +424,7 @@ function handleTouchMove(e) {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].moveTo(startingCursor.x, startingCursor.y);
+                ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].lineTo((startingCursor.x + cursor.x) / 2 + (cursor.y - startingCursor.y) * Math.sin(Math.PI / 3), (startingCursor.y + cursor.y) / 2 + (startingCursor.x - cursor.x) * Math.sin(Math.PI / 3));
                 ctx[1].closePath();
