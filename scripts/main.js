@@ -116,6 +116,9 @@ function initTools() {
         ctx[0].fillRect(0, 0, c[0].width, c[0].height);
         ongoingTouches.splice(0);
         startingTouches.splice(0);
+        for (let t of tempCanvas) {
+            t.parentElement.removeChild(t);
+        }
         tempCanvas.splice(0);
         tempCtx.splice(0);
         updateCanvasStack();
@@ -324,7 +327,13 @@ const tempCtx = []
 function handleTouchStart(e) {
     e.preventDefault();
     if (tempCanvas.length >= 5) {
-        return;
+        ongoingTouches.splice(0);
+        startingTouches.splice(0);
+        for (let t of tempCanvas) {
+            t.parentElement.removeChild(t);
+        }
+        tempCanvas.splice(0);
+        tempCtx.splice(0);
     }
     let using = document.querySelector('.tools.btn-primary');
     let touches = e.changedTouches;
