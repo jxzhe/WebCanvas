@@ -1,5 +1,5 @@
-const c = document.querySelectorAll('canvas');
-const ctx = Array.from(c, canvas => canvas.getContext('2d'));
+const c = Array.from(document.querySelectorAll('canvas'));
+const ctx = c.map(canvas => canvas.getContext('2d'));
 const tools = document.querySelectorAll('.tools');
 const color = document.querySelector('#Color');
 const lineWidth = document.querySelector('#LineWidth');
@@ -312,8 +312,10 @@ function handleMouseUp() {
     }
 };
 
-let ongoingTouches = [];
-let startingTouches = [];
+const ongoingTouches = [];
+const startingTouches = [];
+const tempCanvas = [];
+const tempCtx = []
 
 function handleTouchStart(e) {
     e.preventDefault();
@@ -328,23 +330,32 @@ function handleTouchStart(e) {
     for (let i = 0; i < touches.length; i++) {
         ongoingTouches.push(copyTouch(touches[i]));
         startingTouches.push(copyTouch(touches[i]));
+
+        temp = document.createElement('canvas');
+        temp.classList.add('position-absolute');
+        temp.setAttribute('width', c[0].width);
+        temp.setAttribute('height', c[0].height);
+        document.querySelector('main').insertBefore(temp, document.querySelector('canvas:last-of-type'));
+        tempCanvas.push(temp);
+        tempCtx.push(temp.getContext('2d'));
+
         [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
         if (using.id === 'Pencil') {
-            ctx[1].beginPath();
-            ctx[1].moveTo(cursor.x - 1, cursor.y);
-            ctx[1].lineTo(cursor.x, cursor.y);
-            ctx[1].stroke();
+            tempCtx[tempCtx.length - 1].beginPath();
+            tempCtx[tempCtx.length - 1].moveTo(cursor.x - 1, cursor.y);
+            tempCtx[tempCtx.length - 1].lineTo(cursor.x, cursor.y);
+            tempCtx[tempCtx.length - 1].stroke();
         } else if (using.id === 'Eraser') {
-            ctx[1].strokeStyle = '#FFFFFF';
-            ctx[1].beginPath();
-            ctx[1].moveTo(cursor.x - 1, cursor.y);
-            ctx[1].lineTo(cursor.x, cursor.y);
-            ctx[1].stroke();
+            tempCtx[tempCtx.length - 1].strokeStyle = '#FFFFFF';
+            tempCtx[tempCtx.length - 1].beginPath();
+            tempCtx[tempCtx.length - 1].moveTo(cursor.x - 1, cursor.y);
+            tempCtx[tempCtx.length - 1].lineTo(cursor.x, cursor.y);
+            tempCtx[tempCtx.length - 1].stroke();
         } else if (using.id === 'Text') {
-            ctx[1].font = lineWidth.value * 2 + `px ${font}`;
-            ctx[1].fillText(text, cursor.x, cursor.y);
+            tempCtx[tempCtx.length - 1].font = lineWidth.value * 2 + `px ${font}`;
+            tempCtx[tempCtx.length - 1].fillText(text, cursor.x, cursor.y);
         } else if (using.getAttribute('for') === 'Upload') {
-            ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+            tempCtx[tempCtx.length - 1].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
         }
     }
 }
@@ -352,27 +363,22 @@ function handleTouchStart(e) {
 function handleTouchMove(e) {
     e.preventDefault();
     let using = document.querySelector('.tools.btn-primary');
-
-    ctx[1].fillStyle = color.value;
-    ctx[1].strokeStyle = color.value;
-    ctx[1].lineWidth = lineWidth.value / 2;
-    ctx[1].lineCap = ctx[1].lineJoin = 'round';
-
     let touches = e.changedTouches;
-    if (using.id !== 'Pencil' && using.id !== 'Eraser') {
-        ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-    }
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     for (let i = 0; i < touches.length; i++) {
         let idx = ongoingTouchIndexById(touches[i].identifier);
+        tempCtx[idx].fillStyle = color.value;
+        tempCtx[idx].strokeStyle = color.value;
+        tempCtx[idx].lineWidth = lineWidth.value / 2;
+        tempCtx[idx].lineCap = tempCtx[idx].lineJoin = 'round';
         if (idx >= 0) {
             [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
             if (using.id === 'Pencil') {
                 [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
-                ctx[1].beginPath();
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].stroke();
+                tempCtx[idx].beginPath();
+                tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
+                tempCtx[idx].lineTo(cursor.x, cursor.y);
+                tempCtx[idx].stroke();
                 ctx[2].beginPath();
                 ctx[2].strokeStyle = '#000000';
                 ctx[2].fillStyle = color.value;
@@ -383,11 +389,11 @@ function handleTouchMove(e) {
                 c[2].style.cursor = 'none';
             } else if (using.id === 'Eraser') {
                 [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
-                ctx[1].strokeStyle = '#FFFFFF';
-                ctx[1].beginPath();
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].stroke();
+                tempCtx[idx].strokeStyle = '#FFFFFF';
+                tempCtx[idx].beginPath();
+                tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
+                tempCtx[idx].lineTo(cursor.x, cursor.y);
+                tempCtx[idx].stroke();
                 ctx[2].beginPath();
                 ctx[2].strokeStyle = '#000000';
                 ctx[2].fillStyle = '#FFFFFFAA';
@@ -398,46 +404,51 @@ function handleTouchMove(e) {
                 c[2].style.cursor = 'none';
             } else if (using.id === 'Line') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].beginPath();
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].stroke();
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+                tempCtx[idx].beginPath();
+                tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
+                tempCtx[idx].lineTo(cursor.x, cursor.y);
+                tempCtx[idx].stroke();
             } else if (using.id === 'Arc') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].beginPath();
-                ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
+                tempCtx[idx].beginPath();
+                tempCtx[idx].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
                 if (useStroke) {
-                    ctx[1].stroke();
+                    tempCtx[idx].stroke();
                 } else {
-                    ctx[1].fill();
+                    tempCtx[idx].fill();
                 }
             } else if (using.id === 'Rect') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].beginPath();
-                ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - prevCursor.x, cursor.y - prevCursor.y);
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+                tempCtx[idx].beginPath();
+                tempCtx[idx].rect(prevCursor.x, prevCursor.y, cursor.x - prevCursor.x, cursor.y - prevCursor.y);
                 if (useStroke) {
-                    ctx[1].stroke();
+                    tempCtx[idx].stroke();
                 } else {
-                    ctx[1].fill();
+                    tempCtx[idx].fill();
                 }
             } else if (using.id === 'Tri') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].beginPath();
-                ctx[1].moveTo(prevCursor.x, prevCursor.y);
-                ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].lineTo((prevCursor.x + cursor.x) / 2 + (cursor.y - prevCursor.y) * Math.sin(Math.PI / 3), (prevCursor.y + cursor.y) / 2 + (prevCursor.x - cursor.x) * Math.sin(Math.PI / 3));
-                ctx[1].closePath();
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+                tempCtx[idx].beginPath();
+                tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
+                tempCtx[idx].lineTo(cursor.x, cursor.y);
+                tempCtx[idx].lineTo((prevCursor.x + cursor.x) / 2 + (cursor.y - prevCursor.y) * Math.sin(Math.PI / 3), (prevCursor.y + cursor.y) / 2 + (prevCursor.x - cursor.x) * Math.sin(Math.PI / 3));
+                tempCtx[idx].closePath();
                 if (useStroke) {
-                    ctx[1].stroke();
+                    tempCtx[idx].stroke();
                 } else {
-                    ctx[1].fill();
+                    tempCtx[idx].fill();
                 }
             } else if (using.id === 'Text') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].font = lineWidth.value * 2 + `px ${font}`;
-                ctx[1].fillText(text, cursor.x, cursor.y);
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+                tempCtx[idx].font = lineWidth.value * 2 + `px ${font}`;
+                tempCtx[idx].fillText(text, cursor.x, cursor.y);
             } else if (using.getAttribute('for') === 'Upload') {
-                ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+                tempCtx[idx].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
             }
             ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
         }
@@ -446,20 +457,34 @@ function handleTouchMove(e) {
 
 function handleTouchEnd(e) {
     e.preventDefault();
-    ctx[0].drawImage(c[1], 0, 0);
-    ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    let touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+        let idx = ongoingTouchIndexById(touches[i].identifier);
+        ctx[0].drawImage(tempCanvas[idx], 0, 0);
+        tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+        ongoingTouches.splice(idx, 1);
+        startingTouches.splice(idx, 1);
+        tempCanvas[idx].parentElement.removeChild(tempCanvas[idx]);
+        tempCanvas.splice(idx, 1);
+        tempCtx.splice(idx, 1);
+    }
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     updateCanvasStack();
-    ongoingTouches.splice(0);
-    startingTouches.splice(0);
 }
 
 function handleTouchCancel(e) {
     e.preventDefault();
-    ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    let touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+        let idx = ongoingTouchIndexById(touches[idx].identifier);
+        tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
+        ongoingTouches.splice(idx, 1);
+        startingTouches.splice(idx, 1);
+        tempCanvas[idx].parentElement.removeChild(tempCanvas[idx]);
+        tempCanvas.splice(idx, 1);
+        tempCtx.splice(idx, 1);
+    }
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
-    ongoingTouches.splice(0);
-    startingTouches.splice(0);
 }
 
 function copyTouch(touch) {
