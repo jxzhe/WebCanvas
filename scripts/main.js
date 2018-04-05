@@ -22,8 +22,6 @@ let index = 0;
 let text = 'TEXT';
 let font = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue", Arial, sans-serif';
 let img = new Image();
-let imgWidth = 0;
-let imgHeight = 0;
 let useStroke = false;
 let picker = new CP(color);
 
@@ -91,14 +89,12 @@ function initTools() {
         reader.onload = function (event) {
             img = new Image();
             img.onload = function () {
-                imgWidth = img.width;
-                imgHeight = img.height;
-                if (imgWidth / imgHeight > c[0].width / c[0].height) {
-                    imgHeight *= c[0].width / imgWidth;
-                    imgWidth = c[0].width;
+                if (img.width / img.height > c[0].width / c[0].height) {
+                    img.height *= c[0].width / img.width;
+                    img.width = c[0].width;
                 } else {
-                    imgWidth *= c[0].height / imgHeight;
-                    imgHeight = c[0].height;
+                    img.width *= c[0].height / img.height;
+                    img.height = c[0].height;
                 }
             };
             img.src = this.result;
@@ -204,7 +200,7 @@ function handleMouseDown(e) {
         ctx[0].font = lineWidth.value * 2 + `px ${font}`;
         ctx[0].fillText(text, cursor.x, cursor.y);
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[0].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
+        ctx[0].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
     }
     isDrawing = true;
     prevCursor = cursor;
@@ -241,7 +237,7 @@ function handleMouseMove(e) {
         ctx[2].fillText(text, cursor.x, cursor.y);
         c[2].style.cursor = 'default';
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[2].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
+        ctx[2].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
         c[2].style.cursor = 'default';
     } else {
         c[2].style.cursor = 'crosshair';
@@ -316,8 +312,8 @@ function handleMouseUp() {
     }
 };
 
-let startingCursor = new Cursor();
 let ongoingTouches = [];
+let startingTouches = [];
 
 function handleTouchStart(e) {
     e.preventDefault();
@@ -331,7 +327,8 @@ function handleTouchStart(e) {
     let touches = e.changedTouches;
     for (let i = 0; i < touches.length; i++) {
         ongoingTouches.push(copyTouch(touches[i]));
-        [startingCursor.x, startingCursor.y] = [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
+        startingTouches.push(copyTouch(touches[i]));
+        [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
         if (using.id === 'Pencil') {
             ctx[1].beginPath();
             ctx[1].moveTo(cursor.x - 1, cursor.y);
@@ -347,7 +344,7 @@ function handleTouchStart(e) {
             ctx[1].font = lineWidth.value * 2 + `px ${font}`;
             ctx[1].fillText(text, cursor.x, cursor.y);
         } else if (using.getAttribute('for') === 'Upload') {
-            ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
+            ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
         }
     }
 }
@@ -365,10 +362,10 @@ function handleTouchMove(e) {
     for (let i = 0; i < touches.length; i++) {
         let idx = ongoingTouchIndexById(touches[i].identifier);
         if (idx >= 0) {
-            [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
             [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
             ctx[2].clearRect(0, 0, c[0].width, c[0].height);
             if (using.id === 'Pencil') {
+                [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
@@ -382,6 +379,7 @@ function handleTouchMove(e) {
                 ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
                 c[2].style.cursor = 'none';
             } else if (using.id === 'Eraser') {
+                [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
                 ctx[1].strokeStyle = '#FFFFFF';
                 ctx[1].beginPath();
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
@@ -396,12 +394,14 @@ function handleTouchMove(e) {
                 ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
                 c[2].style.cursor = 'none';
             } else if (using.id === 'Line') {
+                [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].moveTo(startingCursor.x, startingCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
             } else if (using.id === 'Arc') {
+                [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].arc(startingCursor.x, startingCursor.y, distance(cursor, startingCursor), 0, 2 * Math.PI);
@@ -411,6 +411,7 @@ function handleTouchMove(e) {
                     ctx[1].fill();
                 }
             } else if (using.id === 'Rect') {
+                [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].rect(startingCursor.x, startingCursor.y, cursor.x - startingCursor.x, cursor.y - startingCursor.y);
@@ -420,6 +421,7 @@ function handleTouchMove(e) {
                     ctx[1].fill();
                 }
             } else if (using.id === 'Tri') {
+                [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].moveTo(startingCursor.x, startingCursor.y);
@@ -432,12 +434,13 @@ function handleTouchMove(e) {
                     ctx[1].fill();
                 }
             } else if (using.id === 'Text') {
+                [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].font = lineWidth.value * 2 + `px ${font}`;
                 ctx[1].fillText(text, cursor.x, cursor.y);
             } else if (using.getAttribute('for') === 'Upload') {
                 ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].drawImage(img, cursor.x, cursor.y, imgWidth * lineWidth.value / 50, imgHeight * lineWidth.value / 50);
+                ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
             }
             ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
         }
@@ -470,8 +473,7 @@ function copyTouch(touch) {
 
 function ongoingTouchIndexById(idToFind) {
     for (let i = 0; i < ongoingTouches.length; i++) {
-        let id = ongoingTouches[i].identifier;
-        if (id == idToFind) {
+        if (ongoingTouches[i].identifier == idToFind) {
             return i;
         }
     }
