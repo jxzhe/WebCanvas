@@ -200,7 +200,7 @@ function handleMouseDown(e) {
         ctx[0].font = lineWidth.value * 2 + `px ${font}`;
         ctx[0].fillText(text, cursor.x, cursor.y);
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[0].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+        ctx[0].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
     }
     isDrawing = true;
     prevCursor = cursor;
@@ -237,7 +237,7 @@ function handleMouseMove(e) {
         ctx[2].fillText(text, cursor.x, cursor.y);
         c[2].style.cursor = 'default';
     } else if (using.getAttribute('for') === 'Upload') {
-        ctx[2].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+        ctx[2].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
         c[2].style.cursor = 'default';
     } else {
         c[2].style.cursor = 'crosshair';
@@ -344,7 +344,7 @@ function handleTouchStart(e) {
             ctx[1].font = lineWidth.value * 2 + `px ${font}`;
             ctx[1].fillText(text, cursor.x, cursor.y);
         } else if (using.getAttribute('for') === 'Upload') {
-            ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+            ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
         }
     }
 }
@@ -359,11 +359,14 @@ function handleTouchMove(e) {
     ctx[1].lineCap = ctx[1].lineJoin = 'round';
 
     let touches = e.changedTouches;
+    if (using.id !== 'Pencil' && using.id !== 'Eraser') {
+        ctx[1].clearRect(0, 0, c[0].width, c[0].height);
+    }
+    ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     for (let i = 0; i < touches.length; i++) {
         let idx = ongoingTouchIndexById(touches[i].identifier);
         if (idx >= 0) {
             [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
-            ctx[2].clearRect(0, 0, c[0].width, c[0].height);
             if (using.id === 'Pencil') {
                 [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
                 ctx[1].beginPath();
@@ -396,15 +399,13 @@ function handleTouchMove(e) {
             } else if (using.id === 'Line') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
                 ctx[1].stroke();
             } else if (using.id === 'Arc') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, startingCursor), 0, 2 * Math.PI);
+                ctx[1].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -413,8 +414,7 @@ function handleTouchMove(e) {
             } else if (using.id === 'Rect') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - startingCursor.x, cursor.y - startingCursor.y);
+                ctx[1].rect(prevCursor.x, prevCursor.y, cursor.x - prevCursor.x, cursor.y - prevCursor.y);
                 if (useStroke) {
                     ctx[1].stroke();
                 } else {
@@ -423,10 +423,9 @@ function handleTouchMove(e) {
             } else if (using.id === 'Tri') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 ctx[1].beginPath();
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].moveTo(prevCursor.x, prevCursor.y);
                 ctx[1].lineTo(cursor.x, cursor.y);
-                ctx[1].lineTo((startingCursor.x + cursor.x) / 2 + (cursor.y - startingCursor.y) * Math.sin(Math.PI / 3), (startingCursor.y + cursor.y) / 2 + (startingCursor.x - cursor.x) * Math.sin(Math.PI / 3));
+                ctx[1].lineTo((prevCursor.x + cursor.x) / 2 + (cursor.y - prevCursor.y) * Math.sin(Math.PI / 3), (prevCursor.y + cursor.y) / 2 + (prevCursor.x - cursor.x) * Math.sin(Math.PI / 3));
                 ctx[1].closePath();
                 if (useStroke) {
                     ctx[1].stroke();
@@ -435,12 +434,10 @@ function handleTouchMove(e) {
                 }
             } else if (using.id === 'Text') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
                 ctx[1].font = lineWidth.value * 2 + `px ${font}`;
                 ctx[1].fillText(text, cursor.x, cursor.y);
             } else if (using.getAttribute('for') === 'Upload') {
-                ctx[1].clearRect(0, 0, c[0].width, c[0].height);
-                ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100 , cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
+                ctx[1].drawImage(img, cursor.x - img.width * lineWidth.value / 100, cursor.y - img.height * lineWidth.value / 100, img.width * lineWidth.value / 50, img.height * lineWidth.value / 50);
             }
             ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
         }
