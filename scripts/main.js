@@ -454,6 +454,7 @@ function handleTouchEnd(e) {
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     updateCanvasStack();
     ongoingTouches.splice(0);
+    startingTouches.splice(0);
 }
 
 function handleTouchCancel(e) {
@@ -461,6 +462,7 @@ function handleTouchCancel(e) {
     ctx[1].clearRect(0, 0, c[0].width, c[0].height);
     ctx[2].clearRect(0, 0, c[0].width, c[0].height);
     ongoingTouches.splice(0);
+    startingTouches.splice(0);
 }
 
 function copyTouch(touch) {
