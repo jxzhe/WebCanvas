@@ -14,7 +14,7 @@
 * **Cursor icon**
     * Depends on the current tool
 * **Refresh**
-    * Be able to undo it too
+    * Be able to undo this 'refresh' move too
 * **Different brushes**
     * Circle
     * Rectangle
@@ -27,8 +27,8 @@
     * Paste it **anywhere**
 * **Download as .png**
 
-## **Mobile Phone FULLY SUPPORTED**
-## **Draw With Multi Finger Simultaneously**
+## **Mobile Phone Fully Supported**
+## **Multi Touch Fully Supported**
 ## **Responsive Footer Bar**
 
 ---

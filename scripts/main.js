@@ -114,6 +114,10 @@ function initTools() {
     document.querySelector('#Refresh').onclick = function () {
         ctx[0].fillStyle = '#FFFFFF';
         ctx[0].fillRect(0, 0, c[0].width, c[0].height);
+        ongoingTouches.splice(0);
+        startingTouches.splice(0);
+        tempCanvas.splice(0);
+        tempCtx.splice(0);
         updateCanvasStack();
     };
     document.querySelector('#Save').onclick = function () {
@@ -319,13 +323,10 @@ const tempCtx = []
 
 function handleTouchStart(e) {
     e.preventDefault();
+    if (tempCanvas.length >= 5) {
+        return;
+    }
     let using = document.querySelector('.tools.btn-primary');
-
-    ctx[1].fillStyle = color.value;
-    ctx[1].strokeStyle = color.value;
-    ctx[1].lineWidth = lineWidth.value / 2;
-    ctx[1].lineCap = ctx[1].lineJoin = 'round';
-
     let touches = e.changedTouches;
     for (let i = 0; i < touches.length; i++) {
         ongoingTouches.push(copyTouch(touches[i]));
@@ -338,6 +339,10 @@ function handleTouchStart(e) {
         document.querySelector('main').insertBefore(temp, document.querySelector('canvas:last-of-type'));
         tempCanvas.push(temp);
         tempCtx.push(temp.getContext('2d'));
+        tempCtx[tempCtx.length - 1].fillStyle = color.value;
+        tempCtx[tempCtx.length - 1].strokeStyle = color.value;
+        tempCtx[tempCtx.length - 1].lineWidth = lineWidth.value / 2;
+        tempCtx[tempCtx.length - 1].lineCap = tempCtx[tempCtx.length - 1].lineJoin = 'round';
 
         [cursor.x, cursor.y] = [touches[i].pageX, touches[i].pageY];
         if (using.id === 'Pencil') {
@@ -379,14 +384,6 @@ function handleTouchMove(e) {
                 tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
                 tempCtx[idx].lineTo(cursor.x, cursor.y);
                 tempCtx[idx].stroke();
-                ctx[2].beginPath();
-                ctx[2].strokeStyle = '#000000';
-                ctx[2].fillStyle = color.value;
-                ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
-                ctx[2].stroke();
-                ctx[2].fill();
-                ctx[2].drawImage(pencil, cursor.x + 1, cursor.y - 29, 30, 30);
-                c[2].style.cursor = 'none';
             } else if (using.id === 'Eraser') {
                 [prevCursor.x, prevCursor.y] = [ongoingTouches[idx].pageX, ongoingTouches[idx].pageY];
                 tempCtx[idx].strokeStyle = '#FFFFFF';
@@ -394,14 +391,6 @@ function handleTouchMove(e) {
                 tempCtx[idx].moveTo(prevCursor.x, prevCursor.y);
                 tempCtx[idx].lineTo(cursor.x, cursor.y);
                 tempCtx[idx].stroke();
-                ctx[2].beginPath();
-                ctx[2].strokeStyle = '#000000';
-                ctx[2].fillStyle = '#FFFFFFAA';
-                ctx[2].arc(cursor.x, cursor.y, lineWidth.value / 4, 0, 2 * Math.PI);
-                ctx[2].stroke();
-                ctx[2].fill();
-                ctx[2].drawImage(eraser, cursor.x - 3, cursor.y - 25, 30, 30);
-                c[2].style.cursor = 'none';
             } else if (using.id === 'Line') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
                 tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
@@ -411,6 +400,7 @@ function handleTouchMove(e) {
                 tempCtx[idx].stroke();
             } else if (using.id === 'Arc') {
                 [prevCursor.x, prevCursor.y] = [startingTouches[idx].pageX, startingTouches[idx].pageY];
+                tempCtx[idx].clearRect(0, 0, c[0].width, c[0].height);
                 tempCtx[idx].beginPath();
                 tempCtx[idx].arc(prevCursor.x, prevCursor.y, distance(cursor, prevCursor), 0, 2 * Math.PI);
                 if (useStroke) {
